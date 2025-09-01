@@ -19,8 +19,8 @@
     "build": "react-scripts build"
   },
   "dependencies": {
-    "react": "^19.0.0",
-    "react-dom": "^19.0.0",
+    "react": "^19.1.1",
+    "react-dom": "^19.1.1",
     "react-scripts": "5.0.0"
   },
   "devDependencies": {
