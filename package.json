@@ -2,7 +2,6 @@
   "name": "ecos-project",
   "version": "0.0.1",
   "description": "PB-project",
-  "homepage": "https://github.com/Cvinicius-7/ecos-project#readme",
   "bugs": {
     "url": "https://github.com/Cvinicius-7/ecos-project/issues"
   },
@@ -16,7 +15,8 @@
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
     "start": "react-scripts start",
-    "build": "react-scripts build"
+    "build": "react-scripts build",
+    "deploy": "npm run build && firebase deploy"
   },
   "dependencies": {
     "react": "^19.1.1",
