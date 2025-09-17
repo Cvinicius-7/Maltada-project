@@ -3,6 +3,8 @@ export { default as AppBar } from './customs/AppBar';
 export { default as Avatar } from './customs/Avatar';
 export { default as Button } from './default/Button';
 export { default as Card } from './default/Card';
+export {default as CardActions} from './default/CardActions';
+export {default as CardContent} from './default/CardContent';
 export { default as DatePicker } from './default/DatePicker';
 export { default as DateTimePicker } from './customs/DateTimePicker';
 export { default as Fab } from './default/Fab';
