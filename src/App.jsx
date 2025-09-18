@@ -1,14 +1,22 @@
-import React from 'react';
-import { supabase } from './services/SupabaseClient';
+import Register from "./pages/authentication/Register";
+import { ThemeProvider, createTheme } from '@mui/material/styles';
+
+
+const theme = createTheme({
+  palette: {
+    primary: {
+      main: "#f6b033",
+    },
+    secondary: {
+      main: "#f6bc338a",
+    },
+  },
+});
 
 const App = () => {
-    console.log(supabase)
-
-    return (
-        <div>
-            <h1>Bem-vindo ao Projeto Bloco Atualizado e com deploy automatizado!</h1>
-        </div>
-    );
-};
+  return <ThemeProvider theme={theme}>
+    <Register/>
+  </ThemeProvider>
+}
 
 export default App;
