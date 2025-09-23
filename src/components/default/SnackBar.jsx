@@ -1,8 +1,9 @@
-const SnackBar = () => {
+import { Snackbar as MuiSnackbar } from '@mui/material';
+
+const Snackbar = (props) => {
 	return (
-		<div>
-			<p>Aqui entrará um SnackBar!</p>    
-		</div>
+		<MuiSnackbar {...props}/>
 	);
-};
-export default SnackBar;
+}
+
+export default Snackbar;

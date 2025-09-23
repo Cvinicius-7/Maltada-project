@@ -1,22 +1,20 @@
 const styles = {
-  stack: {
-    textAlign: 'center',
-    mt: 2,
-    alignItems: 'center',
-  },
-  gridOutter: {
-    mt: 5,
-  },
-  grid: {},
-  gridShadow: {
-    boxShadow: 3,
-    p: 2.5,
-    borderRadius: 2,
-  },
-  avatar: {
-    width: 600,
-    height: 200,
-  }
-};
+    gridOutter: {
+        padding: 2,
+        borderRadius: 2,
+        '@media (min-width:900px)': {
+            boxShadow: 3,
+        },
+    },
+    grid: {},
+    stack: {
+        alignItems: 'center',
+        mt: 2,
+    },
+    avatar: {
+        width: 120,
+        height: 120,
+    },
+}
 
 export default styles;
