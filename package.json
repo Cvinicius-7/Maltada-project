@@ -1,0 +1,53 @@
+{
+  "name": "ecos-project",
+  "version": "0.0.1",
+  "description": "PB-project",
+  "bugs": {
+    "url": "https://github.com/Cvinicius-7/ecos-project/issues"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/Cvinicius-7/ecos-project.git"
+  },
+  "license": "MIT",
+  "author": "Carlos Vinícius Pereira",
+  "main": "src/index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "start": "react-scripts start",
+    "build": "react-scripts build",
+    "deploy": "npm run build && firebase deploy"
+  },
+  "dependencies": {
+    "@emotion/react": "^11.14.0",
+    "@emotion/styled": "^11.14.1",
+    "@fontsource/roboto": "^5.2.6",
+    "@mui/icons-material": "^7.3.1",
+    "@mui/material": "^7.3.1",
+    "@mui/styled-engine-sc": "^7.3.1",
+    "@supabase/supabase-js": "^2.56.1",
+    "class-variance-authority": "^0.7.1",
+    "clsx": "^2.1.1",
+    "lucide-react": "^0.542.0",
+    "react": "^19.1.1",
+    "react-dom": "^19.1.1",
+    "react-scripts": "5.0.0",
+    "styled-components": "^6.1.19"
+  },
+  "devDependencies": {
+    "loader-utils": "^3.2.1",
+    "sass": "1.32.0"
+  },
+  "browserslist": {
+    "production": [
+      ">0.2%",
+      "not dead",
+      "not op_mini all"
+    ],
+    "development": [
+      "last 1 chrome version",
+      "last 1 firefox version",
+      "last 1 safari version"
+    ]
+  }
+}
