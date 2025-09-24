@@ -14,7 +14,7 @@ export { default as Pagination } from './default/Pagination';
 export { default as Rating } from './default/Rating';
 export { default as SearchBar } from './customs/SearchBar';
 export { default as Skeleton } from './default/Skeleton';
-export { default as SnackBar } from './default/SnackBar';
+export { default as Snackbar } from './default/Snackbar';
 export { default as Stack } from './default/Stack';
 export { default as Switch } from './default/Switch';
 export { default as TextField } from './customs/TextField';
