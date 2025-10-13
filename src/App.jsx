@@ -1,11 +1,12 @@
-import React from 'react';
-import { ThemeProvider, createTheme } from '@mui/material/styles';
+import { createTheme, ThemeProvider } from '@mui/material/styles';
 import Login from './pages/authentication/Login';
 import Home from './pages/Home';
-import Register from "./pages/authentication/Register";
+import Register from './pages/authentication/Register';
+import Profile from './pages/Profile';
+import Beer from './pages/Beer';
+import Authentication from './services/Authentication';
+import React from 'react';
 
-
-import Authentication from './services/Authentication'; 
 
 const theme = createTheme({
   palette: {
@@ -20,21 +21,46 @@ const theme = createTheme({
 
 const App = () => {
     const [isAuthenticated, setIsAuthenticated] = React.useState(null);
+    const [currentRoute, setCurrentRoute] = React.useState(window.location.pathname);
 
     const checkAuth = async () => {
-      try {
         const auth = await Authentication.isAuthenticated();
         setIsAuthenticated(auth);
-      } catch (error) {
-        console.error("Falha ao verificar autenticação:", error);
-
-        setIsAuthenticated(false);
-      }
     }
 
     React.useEffect(() => {
         checkAuth();
+        setCurrentRoute(window.location.pathname)
     }, []);
+
+    const getPrivateRoute = () => {
+        switch (currentRoute) {
+            case '/':
+            return <Home />;
+            case '/profile':
+            return <Profile />;
+            case '/login':
+            return window.location.href = '/';
+            case '/register':
+            return window.location.href = '/login';
+            default:
+                if (currentRoute.startsWith('/beer')) {
+                    return <Beer currentRoute={currentRoute} />;
+                }
+                return window.location.href = '/';
+        }
+    }
+    const getPublicRoute = () => {
+        switch (currentRoute) {
+            case '/login':
+                return <Login />;
+            case '/register':
+                return <Register />;
+            default:
+                return window.location.href = '/login';
+        }
+    }
+
 
     return (
       <ThemeProvider theme={theme}>
@@ -42,7 +68,7 @@ const App = () => {
             isAuthenticated === null ? (
               <h1>Carregando...</h1> 
             ) : (
-              isAuthenticated ? <Home /> : <Login />
+              isAuthenticated ? getPrivateRoute() : getPublicRoute()
             )
         }
       </ThemeProvider>

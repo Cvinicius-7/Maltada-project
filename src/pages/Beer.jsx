@@ -1,13 +1,16 @@
 import { Button } from "../components";
 import Authentication from "../services/Authentication";
+import React from "react";
 
-const Profile = () => {
+const Beer = (props) => {
+    const id = props.currentRoute.replace('/beer/', '');
+
     return <>
                 <Button text="Logout" onClick={() => {
                     Authentication.logout();
                 }}>Sair</Button>
-                <h1>Perfil</h1>
+                <h1>Beer Page {id}</h1>
             </>;
 }
 
-export default Profile;
+export default Beer;
