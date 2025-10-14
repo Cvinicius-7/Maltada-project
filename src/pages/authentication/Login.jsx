@@ -14,12 +14,13 @@ import Storage from "../../services/Storage";
 import { modeloData } from "./modelo";
 
 import styles from "./styles";
+import { useToast } from "../../hooks/ToastContext";
 
 const Login = () => {
+  const { showToast } = useToast();
   const [email, setEmail] = React.useState("");
   const [password, setPassword] = React.useState("");
   const [error, setError] = React.useState(modeloData);
-  const [message, setMessage] = React.useState("");
   const [loading, setLoading] = React.useState(false);
 
   const handleLogin = async () => {
@@ -53,14 +54,14 @@ const Login = () => {
       if (error) {
         throw error;
       }
-      setMessage("Login realizado com sucesso!");
+      showToast('Login realizado com sucesso!', 'success');
       Storage.setItem("user", data);
       window.location = '/';
     } catch (error) {
       if (error.message === "Invalid login credentials") {
-        setMessage("E-mail ou senha inválidos");
+        showToast("E-mail ou senha inválidos", "error");
       } else {
-        setMessage("Falha no login: " + error.message);
+        showToast("Falha no login: " + error.message, "error");
       }
       console.error("Falha no login", error);
     }
@@ -123,12 +124,6 @@ const Login = () => {
         <Stack spacing={2} sx={styles.stack}>
            <a href="/register">Criar conta</a>
         </Stack>
-        <Snackbar
-          open={message !== ""}
-          autoHideDuration={6000}
-          onClose={() => setMessage("")}
-          message={message}
-        />
       </Grid>
     </Grid>
   );

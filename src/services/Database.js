@@ -1,4 +1,4 @@
-import supabase from "./SupabaseClient";
+import { supabase } from "./SupabaseClient";
 
 const list = async (table, fields, filter, limit, page) => {
     let response = supabase
