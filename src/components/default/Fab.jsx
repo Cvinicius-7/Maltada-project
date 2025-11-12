@@ -1,8 +1,9 @@
-const Fab = () => {
+import { Fab as MuiFab } from '@mui/material';
+
+const Fab = (props) => {
 	return (
-		<div>
-			<p>Aqui entrará um Fab!</p>    
-		</div>
+		<MuiFab {...props}>{props.children}</MuiFab>
 	);
-};
+}
+
 export default Fab;

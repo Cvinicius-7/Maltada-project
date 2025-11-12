@@ -1,94 +1,84 @@
-import * as React from 'react';
-import { styled } from '@mui/material/styles';
-import Collapse from '@mui/material/Collapse';
-import Avatar from '@mui/material/Avatar';
-import IconButton from '@mui/material/IconButton';
-import Typography from '@mui/material/Typography';
-import { red } from '@mui/material/colors';
-import FavoriteIcon from '@mui/icons-material/Favorite';
-import ShareIcon from '@mui/icons-material/Share';
-import ExpandMoreIcon from '@mui/icons-material/ExpandMore';
-import MoreVertIcon from '@mui/icons-material/MoreVert';
+import { Box, Chip, Typography } from '@mui/material';
 import Card from '../default/Card';
-import CardHeader from '../default/CardHeader';
+import EditIcon from '@mui/icons-material/Edit';
+import DeleteIcon from '@mui/icons-material/Delete';
 import CardMedia from '../default/CardMedia';
 import CardContent from '../default/CardContent';
 import CardActions from '../default/CardActions';
+import Button from '../default/Button';
+import Fab from '../default/Fab';
+import Stack from '../default/Stack';
 
-const ExpandMore = styled((props) => {
-  const { expand, ...other } = props;
-  return <IconButton {...other} />;
-})(({ theme }) => ({
-  marginLeft: 'auto',
-  transition: theme.transitions.create('transform', {
-    duration: theme.transitions.duration.shortest,
-  }),
-  variants: [
-    {
-      props: ({ expand }) => !expand,
-      style: {
-        transform: 'rotate(0deg)',
-      },
-    },
-    {
-      props: ({ expand }) => !!expand,
-      style: {
-        transform: 'rotate(180deg)',
-      },
-    },
-  ],
-}));
+export default function BeerCard({ beer }) {
+  const goToDetails = () => (window.location.href = '/beer/' + beer.id);
+  const user = localStorage.getItem('user') ? JSON.parse(localStorage.getItem('user')).user : null;
 
-export default function BeerCard(props) {
-  const [expanded, setExpanded] = React.useState(false);
-
-  const handleExpandClick = () => {
-    setExpanded(!expanded);
-  };
-
-  return (
-    <Card sx={{ maxWidth: 345 }}>
-      <CardHeader
-        avatar={
-          <Avatar sx={{ bgcolor: red[500] }} aria-label="recipe">
-            H
-          </Avatar>
-        }
-        action={
-          <IconButton aria-label="settings">
-            <MoreVertIcon />
-          </IconButton>
-        }
-        title={props.beer.name}
-        subheader={props.beer.style}
-      />
-      <CardMedia
-        component="img"
-        height="194"
-        image={props.beer.image}
-        alt="Paella dish"
-      />
-      <CardContent>
-        <Typography variant="body2" sx={{ color: 'text.secondary' }}>
-          {props.beer.description.substring(0, 100)}...
-        </Typography>
-      </CardContent>
-      <CardActions disableSpacing>
-        <ExpandMore
-          expand={expanded}
-          onClick={handleExpandClick}
-          aria-expanded={expanded}
-          aria-label="show more"
-        >
-          <ExpandMoreIcon />
-        </ExpandMore>
-      </CardActions>
-      <Collapse in={expanded} timeout="auto" unmountOnExit>
-        <CardContent>
-          {props.beer.description}
-        </CardContent>
-      </Collapse>
-    </Card>
-  );
+  return <Stack sx={{
+            position: 'relative',
+          }}>
+          { 
+            user && user.role === 1 ? 
+                <>
+                  <Fab size="small" color="secondary" aria-label="edit" sx={{
+                    position: 'absolute',
+                    left: '-20px',
+                    top: '-20px',
+                  }}>
+                    <EditIcon />
+                  </Fab>
+                  <Fab size="small" color="error" aria-label="edit" sx={{
+                    position: 'absolute',
+                    left: '-20px',
+                    top: '40px',
+                  }}>
+                    <DeleteIcon />
+                  </Fab>
+                </>  : null
+          }
+          <Card
+            sx={{
+              height: '100%',
+              display: 'flex',
+              flexDirection: 'column',
+              overflow: 'hidden',
+              transition: 'transform .2s ease, box-shadow .2s ease',
+              '&:hover': { transform: 'translateY(-4px)' },
+            }}
+          >
+            <Box sx={{ position: 'relative', aspectRatio: '16/9', overflow: 'hidden' }}>
+              <CardMedia
+                component="img"
+                image={beer.image}
+                alt={beer.title}
+                sx={{ width: '100%', height: '100%', objectFit: 'cover' }}
+              />
+              {beer.release_date && (
+                <Chip
+                  size="small"
+                  label={new Date(beer.release_date).getFullYear()}
+                  color="secondary"
+                  sx={{ position: 'absolute', top: 12, left: 12, fontWeight: 700 }}
+                />
+              )}
+            </Box>
+            <CardContent sx={{ flexGrow: 1 }}>
+              <Typography variant="h6" gutterBottom noWrap>
+                {beer.title}
+              </Typography>
+              {beer.description && (
+                <Typography
+                  variant="body2"
+                  sx={{ color: 'text.secondary', display: '-webkit-box', WebkitLineClamp: 2, WebkitBoxOrient: 'vertical', overflow: 'hidden' }}
+                >
+                  {beer.description}
+                </Typography>
+              )}
+            </CardContent>
+            <CardActions sx={{ px: 2, pb: 2 }}>
+              <Button variant="contained" onClick={goToDetails} fullWidth>
+                Ver detalhes
+              </Button>
+            </CardActions>
+          </Card>
+        </Stack>;
 }
-

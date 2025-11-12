@@ -12,8 +12,8 @@ const styles = {
         mt: 2,
     },
     avatar: {
-        width: 120,
-        height: 120,
+        width: 180,
+        height: 180,
     },
 }
 

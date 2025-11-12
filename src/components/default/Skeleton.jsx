@@ -1,8 +1,7 @@
-const Skeleton = () => {
-	return (
-		<div>
-			<p>Aqui entrará um Skeleton!</p>    
-		</div>
-	);
-};
+import { Skeleton as MuiSkeleton } from '@mui/material';
+
+const Skeleton = (props) => {
+  return <MuiSkeleton {...props} />;
+}
+
 export default Skeleton;
