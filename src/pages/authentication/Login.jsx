@@ -17,15 +17,19 @@ import { modeloData } from "./modelo";
 import styles from "./styles";
 import { useToast } from "../../context/ToastContext";
 import Database from "../../services/Database";
+import { useAuth } from "../../context/AuthContext";
+import { Link, useNavigate } from "react-router-dom";
 
 const Login = () => {
+  const { login } = useAuth();
+  const navigate = useNavigate();
   const { showToast } = useToast();
   const [email, setEmail] = React.useState("");
   const [password, setPassword] = React.useState("");
   const [error, setError] = React.useState(modeloData);
   const [loading, setLoading] = React.useState(false);
 
-  const handleLogin = async () => {
+const handleLogin = async () => {
     setLoading(true);
     setError(modeloData);
 
@@ -51,14 +55,19 @@ const Login = () => {
       }));
       return;
     }
+
+
     try {
-      const { data, error } = await Authentication.login(email, password);
+      const { error } = await login(email, password); 
+
       if (error) {
         throw error;
       }
+      
       showToast("Login realizado com sucesso!", "success");
-      Storage.setItem("user", data);
-      window.location = "/";
+      
+      navigate("/");
+
     } catch (error) {
       if (error.message === "Invalid login credentials") {
         showToast("E-mail ou senha inválidos", "error");
@@ -68,10 +77,6 @@ const Login = () => {
       console.error("Falha no login", error);
     }
     setLoading(false);
-  };
-
-  const handleNavigation = (path) => {
-    window.location.href = path;
   };
 
   return (
@@ -95,8 +100,8 @@ const Login = () => {
         item
         xs={12}
         sm={12}
-        md={10}
-        lg={10}
+        md={7}
+        lg={7}
         sx={{
           backgroundImage: `linear-gradient(rgba(0, 0, 0, 0.4), rgba(0, 0, 0, 0.4)), url(${backgroundImage})`,
           backgroundSize: "cover",
@@ -137,8 +142,8 @@ const Login = () => {
         item
         xs={12}
         sm={12}
-        md={2}
-        lg={2}
+        md={5}
+        lg={5}
         sx={{
           display: "flex",
           justifyContent: "center",
@@ -160,7 +165,12 @@ const Login = () => {
             <Avatar src={logo} sx={styles.avatar} />
           </Stack>
           <Stack spacing={2} sx={styles.stack}>
-            <Typography variant="h5" component="div" align="center" sx={{fontFamily: "roboto", fontWeight: 500}}>
+            <Typography
+              variant="h5"
+              component="div"
+              align="center"
+              sx={{ fontFamily: "roboto", fontWeight: 500 }}
+            >
               Seja bem-vindo!
             </Typography>
           </Stack>
@@ -204,14 +214,16 @@ const Login = () => {
             </Button>
           </Stack>
           <Stack spacing={2} sx={styles.stack}>
-            <Button
-              variant="text"
-              size="small"
-              sx={{ textTransform: "none" }}
-              onClick={() => handleNavigation("/register")}
+            <Link
+              to="/register"
+              style={{
+                textAlign: "center",
+                fontFamily: "Roboto",
+                color: "#f6b033",
+              }}
             >
               Criar conta
-            </Button>
+            </Link>
           </Stack>
         </div>
       </Grid>

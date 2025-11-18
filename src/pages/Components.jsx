@@ -1,6 +1,6 @@
 import {
   Alert,
-  AppBar,
+  Appbar,
   Avatar,
   Button,
   Card,
@@ -26,7 +26,7 @@ const Components = () => {
         <div>
             <h1>Componentes</h1>
             <Alert title ="Aviso" severity="info">Este é um alerta de informação!</Alert>
-            <AppBar />
+            <Appbar />
             <Avatar alt="Avatar" src="https://i.pravatar.cc/300" />
             <Avatar>PV</Avatar>
             <Button color="warning" >Este é um Botão!</Button>

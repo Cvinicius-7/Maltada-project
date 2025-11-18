@@ -15,8 +15,12 @@ import { modeloData } from "./modelo";
 
 import styles from "./styles";
 import { useToast } from "../../context/ToastContext";
+import { useAuth } from "../../context/AuthContext";
+import { Link, useNavigate } from "react-router-dom";
 
 const Register = () => {
+  const { register } = useAuth();
+  const navigate = useNavigate(); // Hook de navegação
   const { showToast } = useToast();
   const [email, setEmail] = React.useState("");
   const [password, setPassword] = React.useState("");
@@ -90,23 +94,18 @@ const Register = () => {
       return;
     }
     try {
-      const { data, error } = await Authentication.register(email, password);
+      const { data, error } = await register(email, password);
       if (error) {
         throw error;
       }
       showToast("Registro realizado com sucesso!", "success");
-      console.log(data);
-      console.log(JSON.stringify(data));
+      navigate("/login");
     } catch (error) {
       showToast("Falha no registro: " + error.message, "error");
       console.error("Falha no registro", error);
     }
 
     setLoading(false);
-  };
-
-  const handleNavigation = (path) => {
-    window.location.href = path;
   };
 
   return (
@@ -130,8 +129,8 @@ const Register = () => {
         item
         xs={12}
         sm={12}
-        md={10}
-        lg={10}
+        md={7}
+        lg={7}
         sx={{
           backgroundImage: `linear-gradient(rgba(0, 0, 0, 0.4), rgba(0, 0, 0, 0.4)), url(${backgroundImage})`,
           backgroundSize: "cover",
@@ -172,8 +171,8 @@ const Register = () => {
         item
         xs={12}
         sm={12}
-        md={2}
-        lg={2}
+        md={5}
+        lg={5}
         sx={{
           display: "flex",
           justifyContent: "center",
@@ -253,14 +252,16 @@ const Register = () => {
             </Button>
           </Stack>
           <Stack spacing={3} sx={styles.stack}>
-            <Button
-              variant="text"
-              size="small"
-              sx={{ textTransform: "none" }}
-              onClick={() => handleNavigation("/login")}
+            <Link
+              to="/login"
+              style={{
+                textAlign: "center",
+                fontFamily: "Roboto",
+                color: "#f6b033",
+              }}
             >
               Entrar
-            </Button>
+            </Link>
           </Stack>
         </div>
       </Grid>

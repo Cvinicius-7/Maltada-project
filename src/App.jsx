@@ -1,79 +1,93 @@
-import { ThemeProvider } from '@mui/material/styles';
-import { CssBaseline, Container, Box, DialogContent } from '@mui/material';
+import React from "react";
+import { ThemeProvider } from "@mui/material/styles";
+import { CssBaseline, Container, Box } from "@mui/material";
+import {
+  BrowserRouter as Router,
+  Routes,
+  Route,
+  Navigate,
+} from "react-router-dom";
 import Login from "./pages/authentication/Login";
 import Home from "./pages/Home";
 import Register from "./pages/authentication/Register";
 import Profile from "./pages/Profile";
 import Beer from "./pages/Beer";
-import Authentication from "./services/Authentication";
-import React from "react";
-import { ToastProvider } from "./context/ToastContext";
-import "./styles.scss";
 import AppBar from "./components/customs/AppBar";
-import theme from './theme';
-import { DialogProvider } from './context/DialogContext';
+import Authentication from "./services/Authentication";
+import theme from "./theme";
+import { ToastProvider } from "./context/ToastContext";
+import { DialogProvider } from "./context/DialogContext";
+import { AuthProvider } from "./context/AuthContext";
 
-
+import "./styles.scss";
+const PrivateRoute = ({ isAuthenticated, children }) => {
+  if (isAuthenticated === null) {
+    return <h1>Carregando...</h1>;
+  }
+  return isAuthenticated ? children : <Navigate to="/login" replace />;
+};
 
 const App = () => {
-    const [isAuthenticated, setIsAuthenticated] = React.useState(null);
-    const [currentRoute, setCurrentRoute] = React.useState(window.location.pathname);
+  const [isAuthenticated, setIsAuthenticated] = React.useState(null);
+  const checkAuth = async () => {
+    const auth = await Authentication.isAuthenticated();
+    setIsAuthenticated(auth);
+  };
 
-    const checkAuth = async () => {
-        const auth = await Authentication.isAuthenticated();
-        setIsAuthenticated(auth);
-    }
+  React.useEffect(() => {
+    checkAuth();
+  }, []);
 
-    React.useEffect(() => {
-        checkAuth();
-        setCurrentRoute(window.location.pathname)
-    }, []);
+  return (
+    <Router>
+      <ThemeProvider theme={theme}>
+        <CssBaseline />
+        <AuthProvider>
+          <DialogProvider>
+            <ToastProvider>
+              {isAuthenticated && <AppBar />}
 
-    const getPrivateRoute = () => {
-        switch (currentRoute) {
-            case '/':
-            return <Home />;
-            case '/profile':
-            return <Profile />;
-            case '/login':
-            return window.location.href = '/';
-            case '/register':
-            return window.location.href = '/login';
-            default:
-                if (currentRoute.startsWith('/beer')) {
-                    return <Beer currentRoute={currentRoute} />;
-                }
-                return window.location.href = '/';
-        }
-    }
-    const getPublicRoute = () => {
-        switch (currentRoute) {
-            case '/login':
-                return <Login />;
-            case '/register':
-                return <Register />;
-            default:
-                return window.location.href = '/login';
-        }
-    }
+              <Container maxWidth="lg">
+                <Box className="appBody" sx={{ py: 4 }}>
+                  <Routes>
+                    <Route path="/login" element={<Login />} />
+                    <Route path="/register" element={<Register />} />
 
-    return <ThemeProvider theme={theme}>
-                <CssBaseline />
-                <DialogProvider>
-                    <ToastProvider>
-                        {isAuthenticated && <AppBar onNavigate={setCurrentRoute} />}
-                        <Container maxWidth="lg">
-                            <Box className="appBody" sx={{ py: 4 }}>
-                                {
-                                    isAuthenticated === null ? <h1>Carregando...</h1> : (
-                                        isAuthenticated ? getPrivateRoute() : getPublicRoute()
-                                    )
-                                }
-                            </Box>
-                        </Container>
-                    </ToastProvider>
-                </DialogProvider>
-            </ThemeProvider>;
-}
+                    <Route
+                      path="/"
+                      element={
+                        <PrivateRoute isAuthenticated={isAuthenticated}>
+                          <Home />
+                        </PrivateRoute>
+                      }
+                    />
+                    <Route
+                      path="/profile"
+                      element={
+                        <PrivateRoute isAuthenticated={isAuthenticated}>
+                          <Profile />
+                        </PrivateRoute>
+                      }
+                    />
+                    <Route
+                      path="/beer/:id"
+                      element={
+                        <PrivateRoute isAuthenticated={isAuthenticated}>
+                          <Beer />
+                        </PrivateRoute>
+                      }
+                    />
+
+                    <Route path="*" element={<Navigate to="/" replace />} />
+                  </Routes>
+                </Box>
+              </Container>
+            </ToastProvider>
+          </DialogProvider>
+        </AuthProvider>
+      </ThemeProvider>
+    </Router>
+  );
+};
 
 export default App;

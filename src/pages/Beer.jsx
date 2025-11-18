@@ -4,10 +4,13 @@ import { Grid, Typography } from "../components";
 import useBeers from "../hooks/useBeers";
 import { Box, Chip, Divider } from "@mui/material";
 import React from "react";
+import { useParams } from 'react-router-dom'; 
 
 const Beer = (props) => {
-  const id = props.currentRoute.replace("/beer/", "");
-const { findBeer, beer, loading } = useBeers();
+ 
+  const { id } = useParams();
+
+  const { findBeer, beer, loading } = useBeers();
 
   React.useEffect(() => {
     findBeer(id);
@@ -40,20 +43,20 @@ const { findBeer, beer, loading } = useBeers();
               >
                 <img
                   src={beer.image}
-                  alt={beer.title}
+                  alt={beer.name}
                   style={{ width: "100%", display: "block" }}
                 />
                 <Chip
                   label={
-                    beer.release_date
-                      ? new Date(beer.release_date).toLocaleDateString()
+                    beer.created_at
+                      ? new Date(beer.created_at).toLocaleDateString()
                       : ""
                   }
                   sx={{ position: "absolute", top: 12, left: 12 }}
                 />
               </Box>
               <Typography variant="h4" gutterBottom>
-                {beer.title}
+                {beer.name} 
               </Typography>
               <Typography variant="body1" sx={{ color: "text.secondary" }}>
                 {beer.description}
