@@ -1,6 +1,5 @@
-// MUDANÇA 1: Importação nomeada (com chaves)
-import { supabase } from "./SupabaseClient"; 
-//import { decode } from 'base64-arraybuffer'
+import supabase from "./SupabaseClient";
+import { decode } from 'base64-arraybuffer'
 
 const Bucket = {
     generateNameFile: (name) => {
@@ -10,19 +9,13 @@ const Bucket = {
             .replace(/\s+/g, '-') // substitui espaços por hífen
             .toLowerCase(); // deixa tudo minúsculo
     },
-
-    // MUDANÇA 3: A função agora aceita o 'file' (File Object) diretamente
     upload: async (path, name, file) => {
         const finalPathAndFile = `${path}/${name}`
 
-        // O Supabase faz o upload do File object direto, não precisamos de base64
-        const { data, error } = await supabase.storage.from('images').upload(finalPathAndFile, file, {
-            contentType: file.type // O Supabase lê o tipo de imagem do próprio arquivo
+        const base64 = file.split('base64,')[1]
+        const { data, error } = await supabase.storage.from('images').upload(finalPathAndFile, decode(base64), {
+            contentType: 'image/png'
         });
-
-        if (error) {
-          throw error;
-        }
 
         return data.path;
     },

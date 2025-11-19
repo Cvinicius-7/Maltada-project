@@ -2,31 +2,29 @@ import React from "react";
 import {
   Button,
   CardMedia,
-  DatePicker,
   Fab,
-  Grid,
   Stack,
   TextField,
 } from "../components";
+import { useFilterContext } from "../context/FilterContext";
 import useBeers from "../hooks/useBeers";
 import AddIcon from "@mui/icons-material/Add";
-import useFilter from "../hooks/useFilter";
-import Filter from "../components/customs/Filter";
 import BeerCard from "../components/customs/BeerCard";
-import EmptyState from "../components/customs/EmptyState";
+// Adicionado .js para garantir que importe o componente, não uma imagem
+import EmptyState from "../components/customs/EmptyState.jsx"; 
 import BeerCardSkeleton from "../components/customs/BeerCardSkeleton";
 import {
   Dialog,
   DialogActions,
   DialogContent,
   DialogTitle,
-  Box
+  Box // <--- AQUI ESTAVA FALTANDO O BOX
 } from "@mui/material";
 import Authentication from "../services/Authentication";
 
 const Home = () => {
   const { beers, listBeers, loading, saveBeer } = useBeers(); 
-  const { filter, doFilter } = useFilter();
+  const { filter } = useFilterContext();
 
   const [open, setOpen] = React.useState(false);
   const [data, setData] = React.useState({
@@ -35,7 +33,6 @@ const Home = () => {
     image: null, 
   });
   const [imagePreview, setImagePreview] = React.useState(""); 
-
   
   const handleClickOpen = () => {
     setOpen(true);
@@ -46,7 +43,6 @@ const Home = () => {
     setData({ name: "", description: "", image: null }); 
     setImagePreview("");
   };
-
   
   const handleImageChange = (e) => {
     const file = e.target.files[0];
@@ -59,10 +55,9 @@ const Home = () => {
     }
   };
 
-
   const handleSave = () => {
     saveBeer(data, filter.name.value ? filter : null, 50, 1);
-    handleClose(); // Fecha o modal
+    handleClose();
   };
 
   const user = localStorage.getItem("user")
@@ -71,50 +66,41 @@ const Home = () => {
 
   const isAdmin = user && user.role === 1;
 
-
   React.useEffect(() => {
-    listBeers(filter.title.value ? filter : null, 50, 1);
+    listBeers(filter.name.value ? filter : null, 50, 1);
   }, [filter, listBeers]);
 
   return (
     <>
-      <Filter label="Filtrar por Nome" filter={filter} doFilter={doFilter} />
+      {/* A barra de filtro agora fica no AppBar, então removemos daqui */}
 
-      {/* MUDANÇA AQUI: Trocamos <Grid container> por <Box>
-        - Usamos 'display: flex' e 'flexWrap: wrap' para simular o grid.
-        - Usamos margem negativa (marginLeft: -2) e (marginTop: 0) para
-          recriar o 'spacing={2}' do <Grid container>.
-      */}
+      {/* LAYOUT FLEXBOX (Substituindo o Grid para corrigir alinhamento) */}
       <Box 
         sx={{
           display: 'flex',
           flexWrap: 'wrap',
           marginTop: 2,
-          // Recriando o spacing={2} (16px)
-          marginLeft: '-16px', 
+          marginLeft: '-16px', // Compensação visual
           width: 'calc(100% + 16px)'
         }}
       >
         {loading ? (
-
           Array.from({ length: 12 }).map((_, idx) => (
-            // MUDANÇA AQUI: Trocamos <Grid item> por <Box>
             <Box 
               key={idx}
               sx={{
-                paddingLeft: '16px', // spacing
-                paddingTop: '16px',  // spacing
-                // Recriando xs={12} sm={6} md={4} lg={3}
+                paddingLeft: '16px',
+                paddingTop: '16px',
+                // Responsividade: xs=1 coluna, sm=2, md=3, lg=4
                 flexBasis: { xs: '100%', sm: '50%', md: '33.333%', lg: '25%' },
                 maxWidth: { xs: '100%', sm: '50%', md: '33.333%', lg: '25%' },
-                boxSizing: 'border-box' // Impede que o padding quebre o layout
+                boxSizing: 'border-box'
               }}
             >
               <BeerCardSkeleton />
             </Box>
           ))
         ) : beers.length === 0 ? (
-          // O EmptyState precisa ter 100% de largura
           <Box sx={{ width: '100%', paddingLeft: '16px', paddingTop: '16px' }}>
             <EmptyState
               title="Nenhuma cerveja encontrada"
@@ -123,13 +109,12 @@ const Home = () => {
           </Box>
         ) : (
           beers.map((beer) => (
-            // MUDANÇA AQUI: Trocamos <Grid item> por <Box>
             <Box 
               key={beer.id}
               sx={{
-                paddingLeft: '16px', // spacing
-                paddingTop: '16px',  // spacing
-                // Recriando os números corretos: xs={12} sm={6} md={4} lg={3}
+                paddingLeft: '16px',
+                paddingTop: '16px',
+                // Responsividade: xs=1 coluna, sm=2, md=3, lg=4
                 flexBasis: { xs: '100%', sm: '50%', md: '33.333%', lg: '25%' },
                 maxWidth: { xs: '100%', sm: '50%', md: '33.333%', lg: '25%' },
                 boxSizing: 'border-box'
@@ -141,8 +126,6 @@ const Home = () => {
         )}
       </Box>
       
-      {/* O resto do seu código (Fab, Dialog) continua o mesmo */}
-
       {isAdmin && (
         <Fab
           color="primary"
@@ -157,6 +140,7 @@ const Home = () => {
           <AddIcon />
         </Fab>
       )}
+      
       <Dialog
         maxWidth={"lg"}
         fullWidth={true}

@@ -1,12 +1,16 @@
-import { supabase } from "./SupabaseClient";
+import { supabase } from "./SupabaseClient"; // 1. Importação com chaves {}
 
-const list = async (table, fields, filter, limit, page = 1) => {
+const list = async (table, fields = '*', filter, limit, page = 1) => {
+    // Garante que fields seja uma string
+    let selectFields = typeof fields === 'string' ? fields : '*';
+    
     let query = supabase
         .from(table)
-        .select(fields, { count: 'exact' });
+        .select(selectFields, { count: 'exact' });
 
     if (filter) {
         Object.keys(filter).forEach(key => {
+            // Traduz 'title' para 'name' se necessário
             const column = key === 'title' ? 'name' : key;
 
             if (filter[key].exact) {
@@ -28,41 +32,36 @@ const list = async (table, fields, filter, limit, page = 1) => {
 
 const Database = {
     create: async (table, data) => {
-        return await supabase
-            .from(table)
-            .insert([data])
-            .select()
+        return await supabase.from(table).insert([data]).select();
     },
     update: async (table, data, id) => {
-        return await supabase
-            .from(table)
-            .update(data)
-            .eq('id', id)
-            .select()
+        return await supabase.from(table).update(data).eq('id', id).select();
     },
     delete: async (table, id) => {
-        return await supabase
-            .from(table)
-            .delete()
-            .eq('id', id);
+        return await supabase.from(table).delete().eq('id', id);
     },
     list: list,
-
+    
+    // Função auxiliar para encontrar um registro específico
     find: async (table, id) => {
         const { data, error } = await list(table, "*", { 
-            "id": {
-                exact: true,
-                value: id
-            },
+            "id": { exact: true, value: id },
         }, 1);
 
         if (error) return { data: null, error };
         return { data: data && data.length > 0 ? data[0] : null, error: null };
     },
-
+    
+    // Função que o seu Login estava tentando usar
+    findBy: async (table, filter) => {
+        return await list(table, "*", filter, 1);
+    },
+    
+    // Função direta do Supabase (útil para o useBeers)
     get: async (table, id) => {
         const { data, error } = await supabase.from(table).select('*').eq('id', id).single();
         return { data, error };
     },
 }
+
 export default Database;

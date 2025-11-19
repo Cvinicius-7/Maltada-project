@@ -1,73 +1,50 @@
 import React from "react";
-import {
-  Grid,
-  Stack,
-  Avatar,
-  TextField,
-  Button,
-  Snackbar,
-} from "../../components";
+import { Stack, Avatar, TextField, Button,Grid } from "../../components";
 import logo from "../../assets/images/Maltada2.png";
 import backgroundImage from "../../assets/images/BG1.jpg";
-import { Typography } from "@mui/material";
-import Authentication from "../../services/Authentication";
-import Storage from "../../services/Storage";
+import { Typography, Box } from "@mui/material"; // Importando Box
 import { modeloData } from "./modelo";
-
 import styles from "./styles";
 import { useToast } from "../../context/ToastContext";
-import Database from "../../services/Database";
 import { useAuth } from "../../context/AuthContext";
-import { Link, useNavigate } from "react-router-dom";
+import { Link } from "react-router-dom";
 
 const Login = () => {
   const { login } = useAuth();
-  const navigate = useNavigate();
   const { showToast } = useToast();
   const [email, setEmail] = React.useState("");
   const [password, setPassword] = React.useState("");
   const [error, setError] = React.useState(modeloData);
   const [loading, setLoading] = React.useState(false);
 
-const handleLogin = async () => {
+  const handleLogin = async () => {
     setLoading(true);
     setError(modeloData);
 
+    // --- Validações ---
     const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
     if (email === "") {
-      setError((prev) => ({
-        ...prev,
-        email: { message: "E-mail é obrigatório", show: true },
-      }));
-      return;
+      setError((prev) => ({ ...prev, email: { message: "E-mail é obrigatório", show: true } }));
+      setLoading(false); return;
     }
     if (!emailRegex.test(email)) {
-      setError((prev) => ({
-        ...prev,
-        email: { message: "E-mail inválido", show: true },
-      }));
-      return;
+      setError((prev) => ({ ...prev, email: { message: "E-mail inválido", show: true } }));
+      setLoading(false); return;
     }
     if (password === "") {
-      setError((prev) => ({
-        ...prev,
-        password: { message: "Senha é obrigatória", show: true },
-      }));
-      return;
+      setError((prev) => ({ ...prev, password: { message: "Senha é obrigatória", show: true } }));
+      setLoading(false); return;
     }
 
-
+    // --- Login ---
     try {
-      const { error } = await login(email, password); 
+      const { error } = await login(email, password);
 
       if (error) {
         throw error;
       }
-      
       showToast("Login realizado com sucesso!", "success");
       
-      navigate("/");
-
     } catch (error) {
       if (error.message === "Invalid login credentials") {
         showToast("E-mail ou senha inválidos", "error");

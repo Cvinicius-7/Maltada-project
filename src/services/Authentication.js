@@ -1,5 +1,5 @@
 import Storage from "./Storage";
-import { supabase } from "./SupabaseClient";
+import supabase from "./SupabaseClient";
 
 const Authentication = {
     login: async (email, password) => {
@@ -21,7 +21,6 @@ const Authentication = {
     logout: async () => {
         Storage.clear();
         await supabase.auth.signOut();
-        window.location.reload();
     }
 }
 

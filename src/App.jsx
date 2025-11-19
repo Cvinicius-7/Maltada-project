@@ -1,93 +1,85 @@
-import React from "react";
-import { ThemeProvider } from "@mui/material/styles";
-import { CssBaseline, Container, Box } from "@mui/material";
-import {
-  BrowserRouter as Router,
-  Routes,
-  Route,
-  Navigate,
-} from "react-router-dom";
-import Login from "./pages/authentication/Login";
-import Home from "./pages/Home";
-import Register from "./pages/authentication/Register";
-import Profile from "./pages/Profile";
-import Beer from "./pages/Beer";
-import AppBar from "./components/customs/AppBar";
-import Authentication from "./services/Authentication";
-import theme from "./theme";
-import { ToastProvider } from "./context/ToastContext";
-import { DialogProvider } from "./context/DialogContext";
-import { AuthProvider } from "./context/AuthContext";
+import { ThemeProvider } from '@mui/material/styles';
+import { CssBaseline, Container, Box, LinearProgress } from '@mui/material';
+import { ToastProvider } from './context/ToastContext';
+import { DialogProvider } from './context/DialogContext';
+import { Navigate, BrowserRouter, Routes, Route } from 'react-router-dom';
+import './styles.scss';
+import AppBar from './components/customs/AppBar'
+import theme from './theme';
+import { useAuth } from './context/AuthContext';
+import { FilterProvider } from "./context/FilterContext";
+import { lazy, Suspense } from 'react';
 
-import "./styles.scss";
-const PrivateRoute = ({ isAuthenticated, children }) => {
-  if (isAuthenticated === null) {
-    return <h1>Carregando...</h1>;
-  }
-  return isAuthenticated ? children : <Navigate to="/login" replace />;
-};
+
+const HomePage = lazy(() => import('./pages/Home'));
+const ProfilePage = lazy(() => import('./pages/Profile'));
+const BeerPage = lazy(() => import('./pages/Beer'));
+const RegisterPage = lazy(() => import('./pages/authentication/Register'));
+const LoginPage = lazy(() => import('./pages/authentication/Login'));
+const StylesPage = lazy(() => import('./pages/Styles'));
+
+const PrivateRoute = ({children, isAuthenticated}) => {
+    return isAuthenticated ? children : <Navigate to="/login"/>;
+}
+
+const PublicRoute = ({children, isAuthenticated}) => {
+    return !isAuthenticated ? children : <Navigate to="/"/>;
+}
 
 const App = () => {
-  const [isAuthenticated, setIsAuthenticated] = React.useState(null);
-  const checkAuth = async () => {
-    const auth = await Authentication.isAuthenticated();
-    setIsAuthenticated(auth);
-  };
+    const { isAuthenticated, logout } = useAuth();
 
-  React.useEffect(() => {
-    checkAuth();
-  }, []);
 
-  return (
-    <Router>
-      <ThemeProvider theme={theme}>
-        <CssBaseline />
-        <AuthProvider>
-          <DialogProvider>
-            <ToastProvider>
-              {isAuthenticated && <AppBar />}
-
-              <Container maxWidth="lg">
-                <Box className="appBody" sx={{ py: 4 }}>
-                  <Routes>
-                    <Route path="/login" element={<Login />} />
-                    <Route path="/register" element={<Register />} />
-
-                    <Route
-                      path="/"
-                      element={
-                        <PrivateRoute isAuthenticated={isAuthenticated}>
-                          <Home />
-                        </PrivateRoute>
-                      }
-                    />
-                    <Route
-                      path="/profile"
-                      element={
-                        <PrivateRoute isAuthenticated={isAuthenticated}>
-                          <Profile />
-                        </PrivateRoute>
-                      }
-                    />
-                    <Route
-                      path="/beer/:id"
-                      element={
-                        <PrivateRoute isAuthenticated={isAuthenticated}>
-                          <Beer />
-                        </PrivateRoute>
-                      }
-                    />
-
-                    <Route path="*" element={<Navigate to="/" replace />} />
-                  </Routes>
-                </Box>
-              </Container>
-            </ToastProvider>
-          </DialogProvider>
-        </AuthProvider>
-      </ThemeProvider>
-    </Router>
-  );
-};
+ return <ThemeProvider theme={theme}>
+                <CssBaseline />
+                <DialogProvider>
+                    <ToastProvider>
+                      <FilterProvider>
+                        <BrowserRouter>
+                            {isAuthenticated && <AppBar />}
+                            <Container maxWidth="lg">
+                                <Box className="appBody" sx={{ py: 4 }}>
+                                    <Suspense fallback={<LinearProgress />}>
+                                        <Routes>
+                                            <Route path="/" element={
+                                                <PrivateRoute isAuthenticated={isAuthenticated}>
+                                                    <HomePage />
+                                                </PrivateRoute>
+                                            }/>
+                                            <Route path="/beer/:id" element={
+                                                <PrivateRoute isAuthenticated={isAuthenticated}>
+                                                    <BeerPage />
+                                                </PrivateRoute>
+                                            }/>
+                                            <Route path="/profile" element={
+                                                <PrivateRoute isAuthenticated={isAuthenticated}>
+                                                    <ProfilePage />
+                                                </PrivateRoute>
+                                            }/>
+                                            <Route path="/login" element={
+                                                <PublicRoute isAuthenticated={isAuthenticated}>
+                                                    <LoginPage />
+                                                </PublicRoute>
+                                            }/>
+                                            <Route path="/register" element={
+                                                <PublicRoute isAuthenticated={isAuthenticated}>
+                                                    <RegisterPage />
+                                                </PublicRoute>
+                                            }/>
+                                            <Route path="/styles" element={
+                                                <PrivateRoute isAuthenticated={isAuthenticated}>
+                                                    <StylesPage />
+                                                </PrivateRoute>
+                                            }/>
+                                        </Routes>
+                                    </Suspense>
+                                </Box>
+                            </Container>
+                        </BrowserRouter>
+                      </FilterProvider>
+                    </ToastProvider>
+                </DialogProvider>
+            </ThemeProvider>;
+}
 
 export default App;
