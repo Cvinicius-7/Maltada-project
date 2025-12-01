@@ -3,11 +3,15 @@ import React, { createContext, useContext, useState } from "react";
 const FilterContext = createContext();
 
 export function FilterProvider({ children }) {
-    // Adaptamos seu estado para usar 'name' (pois seu banco usa 'name', não 'title')
     const [filter, setFilter] = useState({
         name: { 
             value: '',
             exact: false
+        },
+        // NOVO CAMPO: Filtro por Estilo
+        style: {
+            value: '', // Vazio = Todos os estilos
+            exact: false // false para permitir busca parcial (ex: "IPA" acha "Session IPA")
         }
     });
 

@@ -1,68 +1,397 @@
-import React from "react";
-import { useParams } from 'react-router-dom';
-import { Box, Chip, Divider, Grid, Typography } from "@mui/material"; 
+import React, { useState } from "react";
+import { useParams } from "react-router-dom";
+import {
+  Box,
+  Chip,
+  Divider,
+  Grid,
+  Typography,
+  Paper,
+  Rating,
+  LinearProgress,
+  Avatar,
+  Button,
+} from "@mui/material";
 import useBeers from "../hooks/useBeers";
+import BusinessIcon from "@mui/icons-material/Business";
+import ScienceIcon from "@mui/icons-material/Science";
+import WaterDropIcon from "@mui/icons-material/WaterDrop";
+import RateReviewIcon from "@mui/icons-material/RateReview";
+import ReviewForm from "../components/customs/ReviewFrom";
+import LocalOfferIcon from "@mui/icons-material/LocalOffer";
+import LocalDrinkIcon from "@mui/icons-material/LocalDrink";
+
+const StatBar = ({ label, value, max }) => (
+  <Box sx={{ mb: 1.5 }}>
+    <Box sx={{ display: "flex", justifyContent: "space-between", mb: 0.5 }}>
+      <Typography variant="caption" fontWeight="bold">
+        {label}
+      </Typography>
+      <Typography variant="caption" color="black">
+        {value ? value : 0} / {max}
+      </Typography>
+    </Box>
+    <LinearProgress
+      variant="determinate"
+      value={((value || 0) / max) * 100}
+      sx={{
+        height: 6,
+        borderRadius: 4,
+        bgcolor: "#fbc568ff",
+        "& .MuiLinearProgress-bar": { bgcolor: "black" },
+      }}
+    />
+  </Box>
+);
 
 const Beer = () => {
   const { id } = useParams();
-  const { findBeer, beer, loading } = useBeers();
-
+  const { findBeer, beer, loading, saveReview } = useBeers();
+  const [showReviewForm, setShowReviewForm] = useState(false);
   React.useEffect(() => {
     findBeer(id);
   }, [id, findBeer]);
+  const getScoreColor = (score) => {
+    if (!score) return "#000000ff";
+    if (score >= 7.5) return "#ffcc33";
+    if (score >= 5) return "#ffcc33";
+    return "#ffcc33";
+  };
 
   return (
     <>
       <Grid container spacing={3}>
-        {/* COLUNA PRINCIPAL (Esquerda) */}
         <Grid item xs={12} md={8}>
           {loading ? (
-            <Box sx={{ aspectRatio: '16/9', width: '100%', bgcolor: 'rgba(0,0,0,0.1)', borderRadius: 2 }} />
+            <Box
+              sx={{
+                aspectRatio: "16/9",
+                width: "100%",
+                bgcolor: "rgba(0,0,0,0.1)",
+                borderRadius: 2,
+              }}
+            />
           ) : (
             <>
-              <Box sx={{ position: 'relative', overflow: 'hidden', borderRadius: 2, mb: 2, maxHeight: '500px', display: 'flex', justifyContent: 'center', bgcolor: '#f5f5f5' }}>
+              <Box
+                sx={{
+                  position: "relative",
+                  overflow: "hidden",
+                  borderRadius: 2,
+                  mb: 2,
+                  maxHeight: "500px",
+                  display: "flex",
+                  justifyContent: "center",
+                  bgcolor: "#f5f5f5",
+                }}
+              >
                 {beer.image && (
-                    <img src={beer.image} alt={beer.name} style={{ width: '100%', height: '100%', objectFit: 'contain', maxHeight: '500px' }} />
+                  <img
+                    src={beer.image}
+                    alt={beer.name}
+                    style={{
+                      width: "100%",
+                      height: "100%",
+                      objectFit: "contain",
+                      maxHeight: "500px",
+                    }}
+                  />
                 )}
                 {beer.created_at && (
-                    <Chip label={new Date(beer.created_at).toLocaleDateString()} sx={{ position: 'absolute', top: 12, left: 12, bgcolor: 'white' }} />
+                  <Chip
+                    label={new Date(beer.created_at).getUTCFullYear()}
+                    sx={{
+                      position: "absolute",
+                      top: 12,
+                      left: 12,
+                      bgcolor: "#f6b033",
+                      color: "#000000ff",
+                    }}
+                  />
                 )}
               </Box>
-              
-              <Typography variant="h4" gutterBottom sx={{ fontWeight: 'bold' }}>
-                {beer.name}
-              </Typography>
-              
-              {/* Aqui exibimos a descrição vinda do banco */}
-              <Typography variant="body1" sx={{ color: 'text.secondary', lineHeight: 1.8, whiteSpace: 'pre-line' }}>
+
+              <Box
+                sx={{ display: "flex", alignItems: "center", gap: 2, mb: 2 }}
+              >
+                <Box
+                  sx={{
+                    bgcolor: getScoreColor(beer.rating),
+                    color: "#000000ff",
+                    width: 50,
+                    height: 50,
+                    borderRadius: 1,
+                    display: "flex",
+                    alignItems: "center",
+                    justifyContent: "center",
+                    fontWeight: "900",
+                    fontSize: "1.5rem",
+                    boxShadow: 2,
+                  }}
+                >
+                  {beer.rating || "-"}
+                </Box>
+
+                <Typography
+                  variant="h4"
+                  gutterBottom
+                  sx={{ fontWeight: "bold", mb: 0 }}
+                >
+                  {beer.name}
+                </Typography>
+              </Box>
+
+              <Typography
+                variant="body1"
+                sx={{
+                  color: "text.secondary",
+                  lineHeight: 1.8,
+                  whiteSpace: "pre-line",
+                }}
+              >
                 {beer.description || "Sem descrição disponível."}
               </Typography>
+
+              <Box sx={{ mt: 6 }}>
+                <Typography variant="h5" gutterBottom sx={{ fontWeight: "bold" }}>
+                  Avaliações da Comunidade
+                </Typography>
+                <Divider sx={{ mb: 3 }} />
+
+                {!beer.reviews || beer.reviews.length === 0 ? (
+                  <Typography color="text.secondary">
+                    Seja o primeiro a avaliar esta cerveja!
+                  </Typography>
+                ) : (
+                  <Grid container spacing={2}>
+                    {beer.reviews.map((review) => (
+                      <Grid item xs={12} key={review.id}>
+                        <Paper elevation={0} sx={{ p: 2, bgcolor: "#f6b033" }}>
+                          
+                          {/* Cabeçalho do Review (Avatar + Data) */}
+                          <Box sx={{ display: "flex", justifyContent: "space-between", mb: 1 }}>
+                            <Box sx={{ display: "flex", alignItems: "center", gap: 1 }}>
+                              <Avatar
+                                src={review.profiles?.avatar_url}
+                                alt={review.profiles?.full_name || "Usuário"}
+                                sx={{
+                                  width: 32, height: 32, // Aumentei um pouco
+                                  bgcolor: "white", color: "#f6b033",
+                                  fontSize: "0.9rem", fontWeight: 'bold'
+                                }}
+                              >
+                                {review.profiles?.full_name?.[0] || "U"}
+                              </Avatar>
+                              <Box>
+                                <Typography variant="subtitle2" fontWeight="bold" sx={{ color: "black", lineHeight: 1 }}>
+                                    {review.profiles?.full_name || "Usuário"}
+                                </Typography>
+                                <Typography variant="caption" sx={{ color: "rgba(0,0,0,0.6)" }}>
+                                    {new Date(review.created_at).toLocaleDateString()}
+                                </Typography>
+                              </Box>
+                            </Box>
+                            
+                            {/* Informações de Compra (Preço e Embalagem) */}
+                            <Box sx={{ textAlign: 'right' }}>
+                                {review.price_paid && (
+                                    <Chip 
+                                        icon={<LocalOfferIcon style={{color: 'black'}} />} 
+                                        label={`R$ ${review.price_paid}`} 
+                                        size="small" 
+                                        sx={{ bgcolor: 'rgba(255,255,255,0.5)', color: 'black', fontWeight: 'bold', mr: 0.5, mb: 0.5 }} 
+                                    />
+                                )}
+                                {review.packaging && (
+                                    <Chip 
+                                        icon={<LocalDrinkIcon style={{color: 'black'}} />} 
+                                        label={review.packaging} 
+                                        size="small" 
+                                        sx={{ bgcolor: 'rgba(255,255,255,0.3)', color: 'black', mb: 0.5 }} 
+                                    />
+                                )}
+                            </Box>
+                          </Box>
+                          
+                          <Typography variant="body1" sx={{ color: "black", mb: 2, mt: 1, fontWeight: 500 }}>
+                            "{review.comment}"
+                          </Typography>
+
+                          {/* Notas Detalhadas */}
+                          <Box sx={{ 
+                              display: "flex", 
+                              gap: 2, 
+                              opacity: 0.8, 
+                              color: "black", 
+                              flexWrap: 'wrap',
+                              bgcolor: 'rgba(0,0,0,0.05)',
+                              p: 1,
+                              borderRadius: 1
+                          }}>
+                            <Typography variant="caption">👃 Aroma: <b>{review.aroma}</b>/10</Typography>
+                            <Typography variant="caption">👅 Sabor: <b>{review.flavor}</b>/20</Typography>
+                            <Typography variant="caption">👀 Aparência: <b>{review.appearance}</b>/5</Typography>
+                            <Typography variant="caption">👄 Sensação: <b>{review.mouthfeel}</b>/5</Typography>
+                            <Typography variant="caption">🧠 Conjunto: <b>{review.impression}</b>/10</Typography>
+                          </Box>
+                        </Paper>
+                      </Grid>
+                    ))}
+                  </Grid>
+                )}
+              </Box>
             </>
           )}
         </Grid>
-
-        {/* COLUNA LATERAL (Direita) */}
         <Grid item xs={12} md={4}>
-            <Typography variant="h6" gutterBottom>Informações</Typography>
-            <Divider sx={{ mb: 2, opacity: .6 }} />
+          <Typography variant="h6" gutterBottom>
+            Informações
+          </Typography>
+          <Divider sx={{ mb: 2, opacity: 0.6 }} />
 
-            {loading ? (
-                <Typography variant="body2">Carregando...</Typography>
-            ) : (
-                <Box sx={{ mb: 3 }}>
-                    <Typography variant="subtitle1" sx={{ fontWeight: 'bold', mb: 1 }}>Estilo:</Typography>
-                    {/* Agora 'beer.style' é uma string direta do seu banco */}
-                    {beer.style ? (
-                        <Chip label={beer.style} color="primary" />
-                    ) : (
-                        <Typography variant="body2" sx={{ color: 'text.secondary' }}>Estilo não informado.</Typography>
-                    )}
+          {loading ? (
+            <Typography variant="body2">Carregando...</Typography>
+          ) : (
+            <Box>
+              <Box sx={{ mb: 3 }}>
+                <Box
+                  sx={{ display: "flex", alignItems: "center", gap: 1, mb: 1 }}
+                >
+                  <BusinessIcon color="primary" fontSize="small" />
+                  <Typography variant="subtitle1" sx={{ fontWeight: "bold" }}>
+                    Cervejaria:
+                  </Typography>
                 </Box>
-            )}
+                <Typography
+                  variant="body1"
+                  sx={{ color: "text.secondary", ml: 4 }}
+                >
+                  {beer.brewery || "Não informada"}
+                </Typography>
+              </Box>
+              <Box sx={{ mb: 3 }}>
+                <Typography
+                  variant="subtitle1"
+                  sx={{ fontWeight: "bold", mb: 1 }}
+                >
+                  Estilo:
+                </Typography>
+                {beer.style ? (
+                  <Chip label={beer.style} color="primary" />
+                ) : (
+                  <Typography variant="body2" sx={{ color: "text.secondary" }}>
+                    Estilo não informado.
+                  </Typography>
+                )}
+              </Box>
+              <Grid container spacing={2} sx={{ mb: 4 }}>
+                <Grid item xs={6}>
+                  <Paper
+                    elevation={0}
+                    sx={{
+                      p: 1.5,
+                      bgcolor: "#F6B033",
+                      borderRadius: 2,
+                      textAlign: "center",
+                    }}
+                  >
+                    <Box
+                      sx={{
+                        display: "flex",
+                        justifyContent: "center",
+                        alignItems: "center",
+                        gap: 0.5,
+                        color: "black",
+                        mb: 0.5,
+                      }}
+                    >
+                      <WaterDropIcon fontSize="small" />
+                      <Typography variant="caption" fontWeight="bold">
+                        ABV
+                      </Typography>
+                    </Box>
+                    <Typography variant="h6" fontWeight="bold" color="black">
+                      {beer.abv ? `${beer.abv}%` : "-"}
+                    </Typography>
+                  </Paper>
+                </Grid>
+                <Grid item xs={6}>
+                  <Paper
+                    elevation={0}
+                    sx={{
+                      p: 1.5,
+                      bgcolor: "#F6B033",
+                      borderRadius: 2,
+                      textAlign: "center",
+                    }}
+                  >
+                    <Box
+                      sx={{
+                        display: "flex",
+                        justifyContent: "center",
+                        alignItems: "center",
+                        gap: 0.5,
+                        color: "black",
+                        mb: 0.5,
+                      }}
+                    >
+                      <ScienceIcon fontSize="small" />
+                      <Typography variant="caption" fontWeight="bold">
+                        IBU
+                      </Typography>
+                    </Box>
+                    <Typography variant="h6" fontWeight="bold" color="black">
+                      {beer.ibu || "-"}
+                    </Typography>
+                  </Paper>
+                </Grid>
+              </Grid>
+              <Typography variant="h6" gutterBottom>
+                Avaliação Geral
+              </Typography>
+              <Divider sx={{ mb: 2, opacity: 0.6 }} />
 
-            <Typography variant="h6" gutterBottom sx={{ mt: 4 }}>Avaliações</Typography>
-            <Divider sx={{ mb: 2, opacity: .6 }} />
-            <Typography variant="body2" sx={{ color: 'text.secondary' }}>Nenhuma avaliação cadastrada ainda.</Typography>
+              {beer.stats ? (
+                <Box sx={{ bgcolor: "#F6B033", p: 2, borderRadius: 2, border: "1px solid #f6b033", mb: 4 }}>
+                  <StatBar label="Aroma" value={beer.stats.avg_aroma} max={10} />
+                  <StatBar label="Aparência" value={beer.stats.avg_appearance} max={5} />
+                  <StatBar label="Sabor" value={beer.stats.avg_flavor} max={20} />
+                  <StatBar label="Sensação" value={beer.stats.avg_mouthfeel} max={5} />
+                  <StatBar label="Conjunto" value={beer.stats.avg_impression} max={10} />
+
+                  <Typography variant="caption" align="center" display="block" sx={{ mt: 1, color: "black" }}>
+                    Baseado em {beer.reviews_count} avaliações
+                  </Typography>
+                </Box>
+              ) : (
+                <Typography variant="body2" color="text.secondary" sx={{ mb: 4 }}>
+                  Sem dados suficientes.
+                </Typography>
+              )}
+              <Box sx={{ mb: 4 }}>
+                {!showReviewForm ? (
+                    <Button 
+                      variant="contained" 
+                      color="primary" 
+                      fullWidth 
+                      startIcon={<RateReviewIcon />}
+                      onClick={() => setShowReviewForm(true)}
+                      sx={{ py: 1.5, fontWeight: 'bold' }}
+                    >
+                      Avaliar esta Cerveja
+                    </Button>
+                ) : (
+                    <ReviewForm 
+                        onSave={(data) => {
+                            saveReview(id, data);
+                            setShowReviewForm(false);
+                        }}
+                        onCancel={() => setShowReviewForm(false)}
+                    />
+                )}
+              </Box>
+            </Box>
+          )}
         </Grid>
       </Grid>
     </>

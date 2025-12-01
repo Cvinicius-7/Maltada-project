@@ -20,17 +20,27 @@ import { Link, useNavigate } from "react-router-dom";
 
 const Register = () => {
   const { register } = useAuth();
-  const navigate = useNavigate(); // Hook de navegação
+  const navigate = useNavigate();
   const { showToast } = useToast();
   const [email, setEmail] = React.useState("");
   const [password, setPassword] = React.useState("");
   const [confirmPassword, setConfirmPassword] = React.useState("");
   const [error, setError] = React.useState(modeloData);
   const [loading, setLoading] = React.useState(false);
+  const [displayName, setDisplayName] = React.useState("");
 
   const handleRegister = async () => {
     setLoading(true);
     setError(modeloData);
+
+    if (displayName.trim() === "") {
+      setError((prev) => ({
+        ...prev,
+      }));
+      showToast("Nome é obrigatório", "error");
+      setLoading(false);
+      return;
+    }
 
     const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
     if (email === "") {
@@ -94,7 +104,7 @@ const Register = () => {
       return;
     }
     try {
-      const { data, error } = await register(email, password);
+      const { data, error } = await register(email, password, displayName);
       if (error) {
         throw error;
       }
@@ -202,6 +212,15 @@ const Register = () => {
             >
               Crie sua conta!
             </Typography>
+          </Stack>
+          <Stack spacing={2} sx={styles.stack}>
+            <TextField
+              value={displayName}
+              onChange={(e) => setDisplayName(e.target.value)}
+              label="Nome de Usuário"
+              variant="outlined"
+              fullWidth
+            />
           </Stack>
           <Stack spacing={3} sx={styles.stack}>
             <TextField

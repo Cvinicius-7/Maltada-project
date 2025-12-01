@@ -20,8 +20,6 @@ import {
   alpha,
   styled,
 } from "@mui/material";
-
-// Ícones
 import MenuIcon from "@mui/icons-material/Menu";
 import SearchIcon from "@mui/icons-material/Search";
 import HomeIcon from "@mui/icons-material/Home";
@@ -33,7 +31,6 @@ import { useAuth } from "../../context/AuthContext";
 import { useNavigate } from "react-router-dom";
 import { useFilterContext } from "../../context/FilterContext";
 
-// --- ESTILOS DO CAMPO DE BUSCA (Estilo Material UI Moderno) ---
 const Search = styled("div")(({ theme }) => ({
   position: "relative",
   borderRadius: theme.shape.borderRadius,
@@ -64,7 +61,6 @@ const StyledInputBase = styled(InputBase)(({ theme }) => ({
   color: "inherit",
   "& .MuiInputBase-input": {
     padding: theme.spacing(1, 1, 1, 0),
-    // padding vertical + font size from searchIcon
     paddingLeft: `calc(1em + ${theme.spacing(4)})`,
     transition: theme.transitions.create("width"),
     width: "100%",
@@ -76,18 +72,12 @@ const StyledInputBase = styled(InputBase)(({ theme }) => ({
 
 const AppBar = () => {
   const navigate = useNavigate();
-  const { logout } = useAuth();
-  const { doFilter } = useFilterContext(); // Pegando a função de filtrar global
-
-  // Estados
+  const { logout, user } = useAuth();
+  const { doFilter } = useFilterContext();
   const [anchorEl, setAnchorEl] = useState(null);
   const [drawerOpen, setDrawerOpen] = useState(false);
-
-  // Handlers do Menu de Usuário (Avatar)
   const handleMenuOpen = (e) => setAnchorEl(e.currentTarget);
   const handleMenuClose = () => setAnchorEl(null);
-
-  // Handlers do Drawer (Menu Lateral)
   const toggleDrawer = (open) => (event) => {
     if (
       event.type === "keydown" &&
@@ -103,7 +93,10 @@ const AppBar = () => {
     setDrawerOpen(false);
   };
 
-  // Conteúdo do Menu Lateral
+  const displayName =
+    user?.full_name || user?.email?.split("@")[0] || "Usuário";
+  const displayInitial = user?.email ? user.email[0].toUpperCase() : "U";
+
   const drawerContent = (
     <Box
       sx={{ width: 250 }}
@@ -166,10 +159,7 @@ const AppBar = () => {
   return (
     <>
       <MuiAppBar position="sticky" elevation={0} sx={{ bgcolor: "#2c2c2c" }}>
-        {" "}
-        {/* Fundo escuro para contraste */}
         <Toolbar>
-          {/* 1. Ícone do Menu (Abre o Drawer) */}
           <IconButton
             size="large"
             edge="start"
@@ -180,8 +170,6 @@ const AppBar = () => {
           >
             <MenuIcon />
           </IconButton>
-
-          {/* 2. Título (Clicável para ir à Home) */}
           <Typography
             variant="h6"
             noWrap
@@ -196,8 +184,6 @@ const AppBar = () => {
           >
             Maltada!
           </Typography>
-
-          {/* 3. Barra de Pesquisa Integrada */}
           <Search>
             <SearchIconWrapper>
               <SearchIcon />
@@ -208,11 +194,8 @@ const AppBar = () => {
               onChange={(e) => doFilter("name", e.target.value)}
             />
           </Search>
-
           <Box sx={{ flexGrow: 1 }} />
-
-          {/* 4. Área do Usuário */}
-          <Box sx={{ display: "flex", alignItems: "center" }}>
+          <Box sx={{ display: "flex", alignItems: "center", gap: 1 }}>
             <Button
               color="inherit"
               onClick={logout}
@@ -221,14 +204,35 @@ const AppBar = () => {
               Sair
             </Button>
             <Tooltip title="Configurações">
-              <IconButton onClick={handleMenuOpen} sx={{ p: 0 }}>
-                <Avatar alt="User" sx={{ bgcolor: "#f6b033" }}>
-                  U
+              <Button
+                onClick={handleMenuOpen}
+                color="inherit"
+                sx={{ textTransform: "none", display: "flex", gap: 1 }}
+              >
+                <Typography
+                  variant="body2"
+                  sx={{
+                    display: { xs: "none", sm: "block" },
+                    fontWeight: "bold",
+                    color: "white",
+                  }}
+                >
+                  {displayName}
+                </Typography>
+                <Avatar
+                  src={user?.avatar_url}
+                  alt={displayName}
+                  sx={{
+                    bgcolor: "#f6b033",
+                    width: 32,
+                    height: 32,
+                    color: "#fff",
+                  }}
+                >
+                  {!user?.avatar_url && displayInitial}
                 </Avatar>
-              </IconButton>
+              </Button>
             </Tooltip>
-
-            {/* Menu Dropdown do Usuário */}
             <Menu
               sx={{ mt: "45px" }}
               id="menu-appbar"
@@ -254,8 +258,6 @@ const AppBar = () => {
           </Box>
         </Toolbar>
       </MuiAppBar>
-
-      {/* O Componente Drawer (Menu Lateral Deslizante) */}
       <Drawer anchor="left" open={drawerOpen} onClose={toggleDrawer(false)}>
         {drawerContent}
       </Drawer>

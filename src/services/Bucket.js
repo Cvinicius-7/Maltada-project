@@ -1,28 +1,35 @@
-import supabase from "./SupabaseClient";
-import { decode } from 'base64-arraybuffer'
+import { supabase } from "./SupabaseClient";
 
 const Bucket = {
-    generateNameFile: (name) => {
-        return name.normalize('NFD')
-            .replace(/[\u0300-\u036f]/g, '') // remove marcas diacríticas
-            .replace(/[^a-zA-Z0-9-_\.]/g, '') // remove tudo que não for letra, número, hífen, underline ou ponto
-            .replace(/\s+/g, '-') // substitui espaços por hífen
-            .toLowerCase(); // deixa tudo minúsculo
-    },
-    upload: async (path, name, file) => {
-        const finalPathAndFile = `${path}/${name}`
+  generateNameFile: (name) => {
+    return name
+      .normalize("NFD")
+      .replace(/[\u0300-\u036f]/g, "")
+      .replace(/[^a-zA-Z0-9-_\.]/g, "")
+      .replace(/\s+/g, "-")
+      .toLowerCase();
+  },
 
-        const base64 = file.split('base64,')[1]
-        const { data, error } = await supabase.storage.from('images').upload(finalPathAndFile, decode(base64), {
-            contentType: 'image/png'
-        });
+  upload: async (bucket, name, file) => {
+    const { data, error } = await supabase.storage
+      .from(bucket)
+      .upload(name, file, {
+        contentType: file.type,
+        upsert: true,
+      });
 
-        return data.path;
-    },
-    load: async (fullPath) => {
-        const { data } = await supabase.storage.from('images').getPublicUrl(fullPath);
-        return data.publicUrl;
+    if (error) {
+      throw error;
     }
-}
+
+    return data.path;
+  },
+
+  load: async (fullPath, bucket = "images") => {
+    const { data } = await supabase.storage.from(bucket).getPublicUrl(fullPath);
+
+    return data.publicUrl;
+  },
+};
 
 export default Bucket;

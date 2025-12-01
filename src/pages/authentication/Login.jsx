@@ -1,8 +1,8 @@
 import React from "react";
-import { Stack, Avatar, TextField, Button,Grid } from "../../components";
+import { Stack, Avatar, TextField, Button, Grid } from "../../components";
 import logo from "../../assets/images/Maltada2.png";
 import backgroundImage from "../../assets/images/BG1.jpg";
-import { Typography, Box } from "@mui/material"; // Importando Box
+import { Typography, Box } from "@mui/material";
 import { modeloData } from "./modelo";
 import styles from "./styles";
 import { useToast } from "../../context/ToastContext";
@@ -21,22 +21,32 @@ const Login = () => {
     setLoading(true);
     setError(modeloData);
 
-    // --- Validações ---
     const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
     if (email === "") {
-      setError((prev) => ({ ...prev, email: { message: "E-mail é obrigatório", show: true } }));
-      setLoading(false); return;
+      setError((prev) => ({
+        ...prev,
+        email: { message: "E-mail é obrigatório", show: true },
+      }));
+      setLoading(false);
+      return;
     }
     if (!emailRegex.test(email)) {
-      setError((prev) => ({ ...prev, email: { message: "E-mail inválido", show: true } }));
-      setLoading(false); return;
+      setError((prev) => ({
+        ...prev,
+        email: { message: "E-mail inválido", show: true },
+      }));
+      setLoading(false);
+      return;
     }
     if (password === "") {
-      setError((prev) => ({ ...prev, password: { message: "Senha é obrigatória", show: true } }));
-      setLoading(false); return;
+      setError((prev) => ({
+        ...prev,
+        password: { message: "Senha é obrigatória", show: true },
+      }));
+      setLoading(false);
+      return;
     }
 
-    // --- Login ---
     try {
       const { error } = await login(email, password);
 
@@ -44,7 +54,6 @@ const Login = () => {
         throw error;
       }
       showToast("Login realizado com sucesso!", "success");
-      
     } catch (error) {
       if (error.message === "Invalid login credentials") {
         showToast("E-mail ou senha inválidos", "error");
