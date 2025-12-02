@@ -251,19 +251,70 @@ const useBeers = () => {
         const {
           data: { user },
         } = await supabase.auth.getUser();
-
-        if (!user) throw new Error("Usuário não logado.");
-        const { error } = await supabase.from("reviews").insert({
+        const payload = {
           beer_id: beerId,
           user_id: user.id,
           ...reviewData,
-        });
+          price_paid: reviewData.price_paid
+            ? Number(reviewData.price_paid)
+            : null,
+        };
+        const { error } = await supabase.from("reviews").insert(payload);
+
         if (error) throw error;
-        showToast("Nova avaliação registrada!", "success");
+        showToast("Avaliação enviada!", "success");
         await findBeer(beerId);
       } catch (error) {
-        console.error("Erro ao avaliar:", error);
-        showToast("Erro ao salvar avaliação: " + error.message, "error");
+        const msg = error.message || "Erro desconhecido";
+        showToast("Erro ao salvar: " + msg, "error");
+      } finally {
+        setLoading(false);
+      }
+    },
+    [findBeer, showToast]
+  );
+
+  const updateReview = useCallback(
+    async (reviewId, beerId, reviewData) => {
+      setLoading(true);
+      try {
+        const payload = {
+          ...reviewData,
+          price_paid: reviewData.price_paid
+            ? Number(reviewData.price_paid)
+            : null,
+        };
+
+        const { error } = await supabase
+          .from("reviews")
+          .update(payload)
+          .eq("id", reviewId);
+
+        if (error) throw error;
+        showToast("Avaliação atualizada!", "success");
+        await findBeer(beerId);
+      } catch (error) {
+        showToast("Erro ao atualizar: " + error.message, "error");
+      } finally {
+        setLoading(false);
+      }
+    },
+    [findBeer, showToast]
+  );
+
+  const deleteReview = useCallback(
+    async (reviewId, beerId) => {
+      setLoading(true);
+      try {
+        const { error } = await supabase
+          .from("reviews")
+          .delete()
+          .eq("id", reviewId);
+        if (error) throw error;
+        showToast("Avaliação excluída.", "success");
+        await findBeer(beerId);
+      } catch (error) {
+        showToast("Erro ao excluir.", "error");
       } finally {
         setLoading(false);
       }
@@ -274,10 +325,11 @@ const useBeers = () => {
   return {
     listBeers,
     findBeer,
-    getUserReviews,
     saveBeer,
     deleteBeer,
     saveReview,
+    updateReview,
+    deleteReview,
     beers,
     beer,
     loading,

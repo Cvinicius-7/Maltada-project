@@ -46,7 +46,7 @@ export function AuthProvider({ children }) {
 
       const userToStore = {
         user: {
-          ...data.user,
+          id: data.user.id,
           role: userRole,
           full_name:
             profileData?.full_name || data.user.user_metadata.full_name,
