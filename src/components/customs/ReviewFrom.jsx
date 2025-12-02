@@ -55,7 +55,7 @@ const ReviewForm = ({ onSave, onCancel }) => {
   });
   const [details, setDetails] = useState({
     comment: "",
-    packaging: "Garrafa (Long Neck)", // Valor padrão
+    packaging: "Garrafa (Long Neck)",
     price_paid: "",
   });
 
@@ -117,7 +117,6 @@ const ReviewForm = ({ onSave, onCancel }) => {
         spacing={2}
         sx={{ mb: 2, mt: 3 }}
       >
-        {/* Seleção de Envasamento */}
         <TextField
           select
           label="Embalagem / Tipo"
@@ -140,8 +139,6 @@ const ReviewForm = ({ onSave, onCancel }) => {
             </MenuItem>
           ))}
         </TextField>
-
-        {/* Campo de Preço */}
         <TextField
           label="Preço Pago (R$)"
           type="number"
@@ -160,7 +157,6 @@ const ReviewForm = ({ onSave, onCancel }) => {
           }}
         />
       </Stack>
-
       <TextField
         label="Comentário (Opcional)"
         placeholder="O que você achou dessa cerveja?"
@@ -171,7 +167,6 @@ const ReviewForm = ({ onSave, onCancel }) => {
         onChange={(e) => setDetails({ ...details, comment: e.target.value })}
         sx={{ mb: 3 }}
       />
-
       <Stack direction="row" spacing={2} justifyContent="flex-end">
         <Button onClick={onCancel} color="inherit">
           Cancelar

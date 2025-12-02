@@ -14,10 +14,13 @@ const useBeers = () => {
     const { data: stats } = await supabase.from("beer_stats").select("*");
     return beerList.map((b) => {
       const stat = stats?.find((s) => s.beer_id === b.id);
+      const price = stat && stat.avg_price ? Number(stat.avg_price) : 0;
+
       return {
         ...b,
         rating: stat ? stat.average_rating_10 : null,
         reviews_count: stat ? stat.review_count : 0,
+        avg_price: price,
       };
     });
   };
@@ -46,17 +49,22 @@ const useBeers = () => {
           );
 
           processedData = await mergeWithStats(processedData);
-
           processedData.sort((a, b) => {
+            const priceA = a.avg_price;
+            const priceB = b.avg_price;
+            const ratingA = a.rating || 0;
+            const ratingB = b.rating || 0;
             switch (orderBy) {
               case "price_asc":
-                return (a.price || 0) - (b.price || 0);
+                if (priceA === 0) return 1;
+                if (priceB === 0) return -1;
+                return priceA - priceB;
               case "price_desc":
-                return (b.price || 0) - (a.price || 0);
+                return priceB - priceA;
               case "rating_desc":
-                return (b.rating || 0) - (a.rating || 0);
+                return ratingB - ratingA;
               case "rating_asc":
-                return (a.rating || 0) - (b.rating || 0);
+                return ratingA - ratingB;
               case "name_desc":
                 return b.name.localeCompare(a.name);
               case "name_asc":
@@ -144,7 +152,6 @@ const useBeers = () => {
         .order("created_at", { ascending: false });
 
       if (error) throw error;
-
       if (data) {
         const processed = await Promise.all(
           data.map(async (review) => {
@@ -237,35 +244,33 @@ const useBeers = () => {
     [listBeers, showToast]
   );
 
-const saveReview = useCallback(async (beerId, reviewData) => {
-        setLoading(true);
-        try {
-            const { data: { user } } = await supabase.auth.getUser();
-            
-            if (!user) throw new Error("Usuário não logado.");
+  const saveReview = useCallback(
+    async (beerId, reviewData) => {
+      setLoading(true);
+      try {
+        const {
+          data: { user },
+        } = await supabase.auth.getUser();
 
-            // MUDANÇA: Voltamos para .insert() para criar um NOVO registro sempre
-            // Removemos o 'upsert' e o 'onConflict'
-            const { error } = await supabase.from('reviews').insert({
-                beer_id: beerId,
-                user_id: user.id,
-                ...reviewData
-            });
-            
-            if (error) throw error;
-            
-            showToast("Nova avaliação registrada!", "success");
-            await findBeer(beerId); // Recarrega a página para mostrar o novo review na lista
-            
-        } catch (error) {
-            console.error("Erro ao avaliar:", error);
-            showToast("Erro ao salvar avaliação: " + error.message, "error");
-        } finally {
-            setLoading(false);
-        }
-    }, [findBeer, showToast]);
+        if (!user) throw new Error("Usuário não logado.");
+        const { error } = await supabase.from("reviews").insert({
+          beer_id: beerId,
+          user_id: user.id,
+          ...reviewData,
+        });
+        if (error) throw error;
+        showToast("Nova avaliação registrada!", "success");
+        await findBeer(beerId);
+      } catch (error) {
+        console.error("Erro ao avaliar:", error);
+        showToast("Erro ao salvar avaliação: " + error.message, "error");
+      } finally {
+        setLoading(false);
+      }
+    },
+    [findBeer, showToast]
+  );
 
-    
   return {
     listBeers,
     findBeer,
