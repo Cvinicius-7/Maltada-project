@@ -237,28 +237,35 @@ const useBeers = () => {
     [listBeers, showToast]
   );
 
-  const saveReview = useCallback(
-    async (beerId, reviewData) => {
-      setLoading(true);
-      try {
-        const {
-          data: { user },
-        } = await supabase.auth.getUser();
-        const { error } = await supabase
-          .from("reviews")
-          .insert({ beer_id: beerId, user_id: user.id, ...reviewData });
-        if (error) throw error;
-        showToast("Avaliação enviada!", "success");
-        await findBeer(beerId);
-      } catch (error) {
-        showToast("Erro ao salvar avaliação.", "error");
-      } finally {
-        setLoading(false);
-      }
-    },
-    [findBeer, showToast]
-  );
+const saveReview = useCallback(async (beerId, reviewData) => {
+        setLoading(true);
+        try {
+            const { data: { user } } = await supabase.auth.getUser();
+            
+            if (!user) throw new Error("Usuário não logado.");
 
+            // MUDANÇA: Voltamos para .insert() para criar um NOVO registro sempre
+            // Removemos o 'upsert' e o 'onConflict'
+            const { error } = await supabase.from('reviews').insert({
+                beer_id: beerId,
+                user_id: user.id,
+                ...reviewData
+            });
+            
+            if (error) throw error;
+            
+            showToast("Nova avaliação registrada!", "success");
+            await findBeer(beerId); // Recarrega a página para mostrar o novo review na lista
+            
+        } catch (error) {
+            console.error("Erro ao avaliar:", error);
+            showToast("Erro ao salvar avaliação: " + error.message, "error");
+        } finally {
+            setLoading(false);
+        }
+    }, [findBeer, showToast]);
+
+    
   return {
     listBeers,
     findBeer,
