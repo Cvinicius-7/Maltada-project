@@ -45,7 +45,9 @@ const Profile = () => {
   const isAdmin = userData.role === 1;
   const roleLabel = isAdmin ? "Administrador" : "Cervejeiro";
   const roleColor = isAdmin ? "secondary" : "primary";
-  const userInitial = userData.email ? userData.email[0].toUpperCase() : "U";
+  const userEmail = userData.email || "Email não disponível";
+  const userInitial = userData.email ? userData.email[0].toUpperCase() : 'U';
+  
 
   const calculateAvg = (review) => {
     return (
@@ -121,7 +123,7 @@ const Profile = () => {
                   <Typography variant="caption" color="text.secondary">
                     E-mail
                   </Typography>
-                  <Typography variant="body1">{userData.email}</Typography>
+                  <Typography variant="body1">{userEmail}</Typography>
                 </Box>
               </Box>
 

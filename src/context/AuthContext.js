@@ -48,6 +48,7 @@ export function AuthProvider({ children }) {
         user: {
           id: data.user.id,
           role: userRole,
+          email: data.user.email,
           full_name:
             profileData?.full_name || data.user.user_metadata.full_name,
           avatar_url: avatarUrl,

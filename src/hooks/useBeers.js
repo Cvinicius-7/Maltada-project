@@ -330,6 +330,7 @@ const useBeers = () => {
     saveReview,
     updateReview,
     deleteReview,
+    getUserReviews,
     beers,
     beer,
     loading,
