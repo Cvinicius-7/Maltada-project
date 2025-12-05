@@ -92,7 +92,7 @@ const Home = () => {
           size="large"
           color="warning"
           startIcon={<SportsBarIcon />}
-          onClick={() => navigate("/beers")}
+          onClick={() => navigate("/BeerList")}
           sx={{
             borderRadius: 8,
             px: 4,

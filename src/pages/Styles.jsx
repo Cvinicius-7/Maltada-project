@@ -455,7 +455,7 @@ const Styles = () => {
         >
           Quer aprofundar ainda mais?
         </Typography>
-        <Typography paragraph color="text.secondary" sx={{ mb: 3 }}>
+        <Typography paragraph color="black" sx={{ mb: 3 }}>
           Acesse o material completo oficial e veja os detalhes de todos os
           estilos existentes no mundo.
         </Typography>
