@@ -1,339 +1,281 @@
-import React from "react";
+import React, { useEffect, useState } from "react";
 import {
-  Button,
-  CardMedia,
-  Fab,
-  Stack,
-  TextField,
+  Grid,
+  Card,
+  CardContent,
+  Typography,
   Box,
-  FormControl,
-  InputLabel,
-  Select,
-  MenuItem,
+  Button,
+  Skeleton,
+  Chip,
+  Divider,
+  CardActionArea,
+  Fab,
+  Avatar,
 } from "@mui/material";
-import {
-  Dialog,
-  DialogActions,
-  DialogContent,
-  DialogTitle,
-} from "@mui/material";
+import { useNavigate } from "react-router-dom";
+import { supabase } from "../services/SupabaseClient";
+import BlogImage from "../components/customs/BlogImage";
+import SportsBarIcon from "@mui/icons-material/SportsBar";
+import ArticleIcon from "@mui/icons-material/Article";
 import AddIcon from "@mui/icons-material/Add";
-import { useFilterContext } from "../context/FilterContext";
-import useBeers from "../hooks/useBeers";
-import BeerCard from "../components/customs/BeerCard";
-import EmptyState from "../components/customs/EmptyState.jsx";
-import BeerCardSkeleton from "../components/customs/BeerCardSkeleton";
 
-const stylesList = [
-  "Todos",
-  "Pilsen",
-  "Lager",
-  "Pale Ale",
-  "IPA",
-  "Stout",
-  "Weiss",
-  "Sour",
-  "Witbier",
-  "Bock",
-  "Porter",
-];
+const getInitials = (name) => {
+  if (!name) return "?";
+  return name.charAt(0).toUpperCase();
+};
 
 const Home = () => {
-  const { beers, listBeers, loading, saveBeer, deleteBeer } = useBeers();
-  const { filter, doFilter } = useFilterContext();
-  const [open, setOpen] = React.useState(false);
-  const [currentId, setCurrentId] = React.useState(null);
-  const [orderBy, setOrderBy] = React.useState("name_asc");
+  const [posts, setPosts] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const navigate = useNavigate();
 
-  const [data, setData] = React.useState({
-    name: "",
-    description: "",
-    brewery: "",
-    style: "",
-    year: "",
-    image: null,
-    currentImagePath: null,
-  });
-  const [imagePreview, setImagePreview] = React.useState("");
-  const handleClickOpen = () => {
-    setCurrentId(null);
-    setData({
-      name: "",
-      description: "",
-      brewery: "",
-      style: "",
-      year: "",
-      image: null,
-      currentImagePath: null,
-    });
-    setImagePreview("");
-    setOpen(true);
-  };
+  useEffect(() => {
+    fetchPosts();
+  }, []);
 
-  const handleEdit = (beer) => {
-    setCurrentId(beer.id);
-    setData({
-      name: beer.name,
-      description: beer.description || "",
-      brewery: beer.brewery || "",
-      style: beer.style || "",
-      year: beer.created_at ? new Date(beer.created_at).getFullYear() : "",
-      image: null,
-      currentImagePath: beer.image,
-    });
-    setImagePreview(beer.image);
-    setOpen(true);
-  };
+  const fetchPosts = async () => {
+    try {
+      const { data, error } = await supabase
+        .from("posts")
+        .select(
+          `
+          *,
+          profiles (
+            full_name,
+            avatar_url
+          )
+        `
+        )
+        .order("created_at", { ascending: false });
 
-  const handleDelete = (id) => {
-    if (window.confirm("Tem certeza que deseja excluir esta cerveja?")) {
-      deleteBeer(id, filter.name.value ? filter : null, 50, 1);
+      if (error) throw error;
+      setPosts(data || []);
+    } catch (error) {
+      console.error("Erro ao buscar posts:", error.message);
+    } finally {
+      setLoading(false);
     }
   };
 
-  const handleClose = () => {
-    setOpen(false);
-    setData({
-      name: "",
-      description: "",
-      brewery: "",
-      style: "",
-      year: "",
-      image: null,
-      currentImagePath: null,
-    });
-    setImagePreview("");
-    setCurrentId(null);
+  const handleReadPost = (postId) => {
+    navigate(`/post/${postId}`);
   };
-
-  const handleImageChange = (e) => {
-    const file = e.target.files[0];
-    if (file) {
-      setData((values) => ({ ...values, image: file }));
-      setImagePreview(URL.createObjectURL(file));
-    } else {
-    }
-  };
-
-  const handleSave = () => {
-    saveBeer(data, filter.name.value ? filter : null, 50, 1, currentId);
-    handleClose();
-  };
-
-  const user = localStorage.getItem("user")
-    ? JSON.parse(localStorage.getItem("user")).user
-    : null;
-
-  const isAdmin = user && user.role === 1;
-
-  React.useEffect(() => {
-    listBeers(filter, 50, 1, orderBy);
-  }, [filter, listBeers, orderBy]);
 
   return (
-    <>
+    <Box sx={{ flexGrow: 1, position: "relative" }}>
       <Box
         sx={{
-          display: "flex",
-          justifyContent: "flex-end",
-          gap: 2,
-          mb: 2,
-          flexWrap: "wrap",
+          mb: 6,
+          p: 4,
+          textAlign: "center",
+          borderRadius: 4,
+          background: "linear-gradient(45deg, #1a1a1a 30%, #2c2c2c 90%)",
+          border: "1px solid rgba(255, 255, 255, 0.1)",
+          boxShadow: "0 8px 32px 0 rgba(0, 0, 0, 0.37)",
         }}
       >
-        <FormControl
-          size="small"
-          sx={{ minWidth: 150, bgcolor: "transparent", borderRadius: 1 }}
+        <Typography
+          variant="h3"
+          component="h1"
+          gutterBottom
+          sx={{ fontWeight: "bold", color: "#f2a900" }}
         >
-          <InputLabel id="style-select-label">Estilo</InputLabel>
-          <Select
-            labelId="style-select-label"
-            value={filter.style?.value || "Todos"}
-            label="Estilo"
-            onChange={(e) =>
-              doFilter(
-                "style",
-                e.target.value === "Todos" ? "" : e.target.value
-              )
-            }
-          >
-            {stylesList.map((style) => (
-              <MenuItem key={style} value={style}>
-                {style}
-              </MenuItem>
-            ))}
-          </Select>
-        </FormControl>
-        <FormControl
-          size="small"
-          sx={{ minWidth: 200, bgcolor: "transparent", borderRadius: 1 }}
+          Bem-vindo ao Maltada!
+        </Typography>
+        <Typography variant="h6" sx={{ color: "#ccc", mb: 4 }}>
+          Notícias, avaliações e a cultura cervejeira em um só lugar.
+        </Typography>
+
+        <Button
+          variant="contained"
+          size="large"
+          color="warning"
+          startIcon={<SportsBarIcon />}
+          onClick={() => navigate("/beers")}
+          sx={{
+            borderRadius: 8,
+            px: 4,
+            py: 1.5,
+            fontWeight: "bold",
+            fontSize: "1.1rem",
+            textTransform: "none",
+          }}
         >
-          <InputLabel id="order-label">Ordenar por</InputLabel>
-          <Select
-            labelId="order-label"
-            value={orderBy}
-            label="Ordenar por"
-            onChange={(e) => setOrderBy(e.target.value)}
-          >
-            <MenuItem value="name_asc">Nome (A-Z)</MenuItem>
-            <MenuItem value="name_desc">Nome (Z-A)</MenuItem>
-            <MenuItem value="rating_desc">Maior Nota</MenuItem>
-            <MenuItem value="rating_asc">Menor Nota</MenuItem>
-            <MenuItem value="price_asc">Menor Preço Médio</MenuItem>
-            <MenuItem value="price_desc">Maior Preço Médio</MenuItem>
-          </Select>
-        </FormControl>
-      </Box>
-      <Box
-        sx={{
-          display: "flex",
-          flexWrap: "wrap",
-          marginTop: 2,
-          marginLeft: "-16px",
-          width: "calc(100% + 16px)",
-        }}
-      >
-        {loading ? (
-          Array.from({ length: 12 }).map((_, idx) => (
-            <Box
-              key={idx}
-              sx={{
-                paddingLeft: "16px",
-                paddingTop: "16px",
-                flexBasis: { xs: "100%", sm: "50%", md: "33.333%", lg: "25%" },
-                maxWidth: { xs: "100%", sm: "50%", md: "33.333%", lg: "25%" },
-                boxSizing: "border-box",
-              }}
-            >
-              <BeerCardSkeleton />
-            </Box>
-          ))
-        ) : beers.length === 0 ? (
-          <Box sx={{ width: "100%", paddingLeft: "16px", paddingTop: "16px" }}>
-            <EmptyState
-              title="Nenhuma cerveja encontrada"
-              subtitle="Tente outro termo de busca."
-            />
-          </Box>
-        ) : (
-          beers.map((beer) => (
-            <Box
-              key={beer.id}
-              sx={{
-                paddingLeft: "16px",
-                paddingTop: "16px",
-                flexBasis: { xs: "100%", sm: "50%", md: "33.333%", lg: "25%" },
-                maxWidth: { xs: "100%", sm: "50%", md: "33.333%", lg: "25%" },
-                boxSizing: "border-box",
-              }}
-            >
-              <BeerCard
-                beer={beer}
-                onEdit={() => handleEdit(beer)}
-                onDelete={() => handleDelete(beer.id)}
-              />
-            </Box>
-          ))
-        )}
+          Explorar Catálogo de Cervejas
+        </Button>
       </Box>
 
-      {isAdmin && (
-        <Fab
-          color="primary"
-          aria-label="add"
-          sx={{ position: "fixed", right: "20px", bottom: "20px" }}
-          onClick={handleClickOpen}
-        >
-          <AddIcon />
-        </Fab>
+      <Box sx={{ display: "flex", alignItems: "center", mb: 3 }}>
+        <ArticleIcon sx={{ color: "#f2a900", mr: 1 }} />
+        <Typography variant="h5" sx={{ fontWeight: "bold", color: "#fff" }}>
+          Últimas do Blog
+        </Typography>
+      </Box>
+      <Divider sx={{ mb: 4, bgcolor: "rgba(255,255,255,0.1)" }} />
+
+      {loading ? (
+        <Grid container spacing={3}>
+          {[1, 2, 3].map((n) => (
+            <Grid item key={n} xs={12} sm={6} md={4}>
+              <Skeleton
+                variant="rectangular"
+                height={200}
+                sx={{ borderRadius: 2 }}
+              />
+              <Skeleton width="60%" sx={{ mt: 1 }} />
+              <Skeleton width="40%" />
+            </Grid>
+          ))}
+        </Grid>
+      ) : (
+        <Grid container spacing={4}>
+          {posts.map((post) => {
+            let profileData = post.profiles;
+
+            if (Array.isArray(profileData)) {
+              profileData = profileData[0];
+            }
+
+            const authorName = profileData?.full_name || "Maltada Member";
+            const avatarPath = profileData?.avatar_url;
+            let avatarFullUrl = null;
+            if (avatarPath) {
+              if (avatarPath.startsWith("http")) {
+                avatarFullUrl = avatarPath;
+              } else {
+                const { data } = supabase.storage
+                  .from("images")
+                  .getPublicUrl(avatarPath);
+                avatarFullUrl = data.publicUrl;
+              }
+            }
+
+            return (
+              <Grid item key={post.id} xs={12} sm={6} md={4}>
+                <Card
+                  sx={{
+                    height: "100%",
+                    display: "flex",
+                    flexDirection: "column",
+                    bgcolor: "#1e1e1e",
+                    color: "#fff",
+                    borderRadius: 3,
+                    transition: "transform 0.2s",
+                    "&:hover": { transform: "translateY(-4px)", boxShadow: 6 },
+                  }}
+                >
+                  <CardActionArea
+                    onClick={() => handleReadPost(post.id)}
+                    sx={{
+                      flexGrow: 1,
+                      display: "flex",
+                      flexDirection: "column",
+                      alignItems: "flex-start",
+                    }}
+                  >
+                    <BlogImage
+                      path={post.image_url}
+                      height={180}
+                      component="img"
+                      alt={post.title}
+                    />
+
+                    <CardContent sx={{ width: "100%", flexGrow: 1 }}>
+                      <Chip
+                        label="Editorial"
+                        size="small"
+                        sx={{
+                          mb: 1.5,
+                          bgcolor: "rgba(242, 169, 0, 0.15)",
+                          color: "#f2a900",
+                          fontWeight: "bold",
+                        }}
+                      />
+
+                      <Typography
+                        gutterBottom
+                        variant="h6"
+                        component="div"
+                        sx={{
+                          fontWeight: "bold",
+                          color: "#f2a900",
+                          lineHeight: 1.2,
+                          mb: 1,
+                        }}
+                      >
+                        {post.title}
+                      </Typography>
+
+                      <Typography variant="body2" sx={{ color: "#aaa", mb: 3 }}>
+                        {post.subtitle}
+                      </Typography>
+
+                      <Box
+                        sx={{
+                          display: "flex",
+                          alignItems: "center",
+                          mt: "auto",
+                          pt: 2,
+                          borderTop: "1px solid rgba(255,255,255,0.1)",
+                        }}
+                      >
+                        <Avatar
+                          src={avatarFullUrl}
+                          sx={{
+                            width: 32,
+                            height: 32,
+                            mr: 1.5,
+                            bgcolor: "#f2a900",
+                            fontSize: "0.9rem",
+                            color: "#000",
+                          }}
+                        >
+                          {getInitials(authorName)}
+                        </Avatar>
+                        <Box>
+                          <Typography
+                            variant="caption"
+                            sx={{
+                              display: "block",
+                              color: "#888",
+                              lineHeight: 1,
+                            }}
+                          >
+                            Por
+                          </Typography>
+                          <Typography
+                            variant="subtitle2"
+                            sx={{ fontSize: "0.85rem", color: "#ddd" }}
+                          >
+                            {authorName}
+                          </Typography>
+                        </Box>
+                      </Box>
+                    </CardContent>
+                  </CardActionArea>
+                </Card>
+              </Grid>
+            );
+          })}
+        </Grid>
       )}
 
-      <Dialog
-        maxWidth={"sm"}
-        fullWidth={true}
-        open={open}
-        onClose={handleClose}
+      <Fab
+        color="warning"
+        aria-label="add"
+        onClick={() => navigate("/new-post")}
+        sx={{
+          position: "fixed",
+          bottom: 30,
+          right: 30,
+          bgcolor: "#f2a900",
+          "&:hover": { bgcolor: "#d49400" },
+        }}
       >
-        <DialogTitle>
-          {currentId ? "Editar Cerveja" : "Adicionar Nova Cerveja"}
-        </DialogTitle>
-        <DialogContent>
-          <form>
-            <Stack spacing={2} mt={1}>
-              <TextField
-                label="Nome da Cerveja"
-                fullWidth
-                value={data.name}
-                onChange={(e) =>
-                  setData((v) => ({ ...v, name: e.target.value }))
-                }
-              />
-              <TextField
-                label="Cervejaria / Fabricante"
-                fullWidth
-                value={data.brewery}
-                onChange={(e) =>
-                  setData((v) => ({ ...v, brewery: e.target.value }))
-                }
-              />
-
-              <Stack direction="row" spacing={2}>
-                <TextField
-                  label="Estilo"
-                  fullWidth
-                  value={data.style}
-                  onChange={(e) =>
-                    setData((v) => ({ ...v, style: e.target.value }))
-                  }
-                />
-                <TextField
-                  label="Ano de Criação"
-                  type="number"
-                  sx={{ width: "150px" }}
-                  value={data.year}
-                  onChange={(e) =>
-                    setData((v) => ({ ...v, year: e.target.value }))
-                  }
-                />
-              </Stack>
-              <TextField
-                label="Descrição"
-                multiline
-                rows={4}
-                fullWidth
-                value={data.description}
-                onChange={(e) =>
-                  setData((v) => ({ ...v, description: e.target.value }))
-                }
-              />
-              <TextField
-                type="file"
-                fullWidth
-                accept="image/png, image/jpeg"
-                onChange={handleImageChange}
-              />
-              {imagePreview && (
-                <CardMedia
-                  sx={{
-                    height: "200px",
-                    width: "100%",
-                    borderRadius: "8px",
-                    backgroundSize: "contain",
-                  }}
-                  image={imagePreview}
-                />
-              )}
-            </Stack>
-          </form>
-        </DialogContent>
-        <DialogActions>
-          <Button onClick={handleClose}>Cancelar</Button>
-          <Button onClick={handleSave} variant="contained" autoFocus>
-            Salvar
-          </Button>
-        </DialogActions>
-      </Dialog>
-    </>
+        <AddIcon />
+      </Fab>
+    </Box>
   );
 };
 

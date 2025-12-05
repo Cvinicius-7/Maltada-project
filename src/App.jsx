@@ -17,6 +17,11 @@ const BeerPage = lazy(() => import("./pages/Beer"));
 const RegisterPage = lazy(() => import("./pages/authentication/Register"));
 const LoginPage = lazy(() => import("./pages/authentication/Login"));
 const StylesPage = lazy(() => import("./pages/Styles"));
+const BlogPostPage = lazy(() => import("./pages/BlogPost"));
+const CreatePostPage = lazy(() => import("./pages/CreatePost"));
+const BeerListPage = lazy(() => import("./pages/BeerList"));
+const EditPostPage = lazy(() => import("./pages/EditPost"));
+
 
 const PrivateRoute = ({ children, isAuthenticated }) => {
   return isAuthenticated ? children : <Navigate to="/login" />;
@@ -46,6 +51,39 @@ const App = () => {
                         element={
                           <PrivateRoute isAuthenticated={isAuthenticated}>
                             <HomePage />
+                          </PrivateRoute>
+                        }
+                      />
+                      <Route
+                        path="/edit-post/:id"
+                        element={
+                          <PrivateRoute isAuthenticated={isAuthenticated}>
+                            <EditPostPage />
+                          </PrivateRoute>
+                        }
+                      />
+                      <Route
+                        path="/BeerList"
+                        element={
+                          <PrivateRoute isAuthenticated={isAuthenticated}>
+                            <BeerListPage />
+                          </PrivateRoute>
+                        }
+                      />
+                      <Route
+
+                        path="/new-post"
+                        element={
+                          <PrivateRoute isAuthenticated={isAuthenticated}>
+                          <CreatePostPage />
+                        </PrivateRoute>
+                      }
+                      />
+                      <Route
+                        path="/post/:id"
+                        element={
+                          <PrivateRoute isAuthenticated={isAuthenticated}>
+                            <BlogPostPage />
                           </PrivateRoute>
                         }
                       />
